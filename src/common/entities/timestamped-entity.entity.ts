@@ -11,12 +11,12 @@ export class TimestampedEntity {
     onCreate: () => dayjs().utc().toDate(),
     defaultRaw: 'now()',
   })
-  createdAt: Date;
+  createdAt?: Date;
 
   @Property({
     onCreate: () => dayjs().utc().toDate(),
     onUpdate: () => dayjs().utc().toDate(),
     defaultRaw: 'now()',
   })
-  updatedAt: Date;
+  updatedAt?: Date;
 }

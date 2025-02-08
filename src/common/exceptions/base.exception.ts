@@ -20,7 +20,7 @@ export class BaseException extends HttpException {
     statusCode: number,
     extra?: BaseExceptionExtra,
   ) {
-    const fullErrorCode = ['RECRIT', errorCode].join(':');
+    const fullErrorCode = ['CP_HUB', errorCode].join(':');
     super(fullErrorCode, statusCode);
 
     this.errorCode = fullErrorCode;
