@@ -31,7 +31,7 @@ export class UnauthenticatedException extends UserException {
   }
 }
 
-export class UnauthorizedException extends BaseException {
+export class UnauthorizedException extends UserException {
   constructor() {
     super(UserErrorCode.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
   }
