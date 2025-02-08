@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Strategy } from 'passport-jwt';
 import { Reflector } from '@nestjs/core';
 import { UserRepository } from '../repositories/user.repositories';
 
@@ -16,7 +16,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const jwtSecret = configService.get<string>('auth.jwtSecret');
     if (!jwtSecret) throw new Error('jwtSecret is not defined');
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: (req) => req?.cookies?.['accessToken'] ?? null,
       ignoreExpiration: false,
       secretOrKey: jwtSecret,
     });

@@ -17,10 +17,10 @@ export class AuthService {
     else return null;
   }
 
-  async login(user: User) {
+  signIn(user: User, rememberMe?: boolean) {
     const payload = { username: user.username, sub: user.id };
-    return {
-      accessToken: this.jwtService.sign(payload),
-    };
+    return this.jwtService.sign(payload, {
+      expiresIn: rememberMe ? '30 days' : '1 days',
+    });
   }
 }

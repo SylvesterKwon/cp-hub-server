@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from '../repositories/user.repositories';
-import { RegisterDto } from '../dtos/user.dto';
+import { SignUpDto } from '../dtos/user.dto';
 import {
   EmailAlreadyExistsException,
   UsernameAlreadyExistsException,
@@ -11,7 +11,7 @@ import bcrypt from 'bcrypt';
 export class UserService {
   constructor(private userRepository: UserRepository) {}
 
-  async register(dto: RegisterDto) {
+  async signUp(dto: SignUpDto) {
     if (await this.userRepository.findByEmail(dto.email))
       throw new UsernameAlreadyExistsException();
     else if (await this.userRepository.findByEmail(dto.email))

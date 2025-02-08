@@ -1,10 +1,11 @@
 import { Injectable, NotImplementedException } from '@nestjs/common';
 import { UserService } from './services/user.service';
-import { RegisterDto } from './dtos/user.dto';
+import { SignUpDto } from './dtos/user.dto';
 import { Transactional } from '@mikro-orm/core';
 import { UserNotFoundException } from 'src/common/exceptions/user.exception';
 import { AuthService } from './auth.service';
 import { UserRepository } from './repositories/user.repositories';
+import { Response } from 'express';
 
 @Injectable()
 export class UserApplication {
@@ -14,20 +15,33 @@ export class UserApplication {
     private userRepository: UserRepository,
   ) {}
 
-  async login(userId: string) {
+  async signIn(response: Response, userId: string, rememberMe?: boolean) {
     const user = await this.userRepository.findById(userId);
     if (!user) throw new UserNotFoundException();
 
-    const res = await this.authService.login(user);
+    const accessToken = this.authService.signIn(user, rememberMe);
+    const expiresDate = new Date();
+    expiresDate.setDate(expiresDate.getDate() + (rememberMe ? 30 : 1));
+
+    response.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      expires: expiresDate,
+    });
+    response.cookie('userId', user.id, {
+      expires: expiresDate,
+    });
+    response.cookie('username', user.username, {
+      expires: expiresDate,
+    });
+
     return {
       message: 'Logged in successfully.',
-      ...res,
     };
   }
 
   @Transactional()
-  async register(dto: RegisterDto) {
-    await this.userService.register(dto);
+  async signUp(dto: SignUpDto) {
+    await this.userService.signUp(dto);
   }
 
   async getUserProfile(username: string) {
