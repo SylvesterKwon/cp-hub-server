@@ -36,6 +36,9 @@ export class UserApplication {
 
     return {
       message: 'Logged in successfully.',
+      accessToken: accessToken,
+      userId: user.id,
+      username: user.username,
     };
   }
 
