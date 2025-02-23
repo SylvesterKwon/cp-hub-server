@@ -9,6 +9,7 @@ import { Tag } from './entities/tag.entity';
 import { CodeforcesService } from './services/codeforces.service';
 import { ProblemSyncApplication } from './applications/problem-sync.applicaiton';
 import { ContestProblems } from './entities/contest-problems.entity';
+import { AtcoderProblemsClient } from './clients/atcoder-problems.client';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ContestProblems } from './entities/contest-problems.entity';
     CodeforcesClient,
     CodeforcesSyncService,
     CodeforcesService,
+    AtcoderProblemsClient,
   ],
   controllers: [],
   exports: [ProblemSyncApplication],
