@@ -11,13 +11,18 @@ export class ProblemSyncApplication {
 
   @Transactional()
   async syncCodeforcesContest(contestId: number) {
-    const contest = await this.codeforcesSyncService.syncOneContest(contestId);
-    console.log(`Succesfully synced Codeforces contest (ID: ${contest.id})`);
+    try {
+      await this.codeforcesSyncService.syncOneContest(contestId);
+    } catch (e) {
+      console.error(
+        `Failed to sync Codeforces contest (ID: ${contestId}): ${e}`,
+      );
+    }
   }
 
-  @Transactional()
+  // @Transactional()
   async syncAllCodeforcesContests() {
     await this.codeforcesSyncService.syncAllContests();
-    console.log(`Succesfully synced all Codeforces contest`);
+    // console.log(`Succesfully synced all Codeforces contest`);
   }
 }

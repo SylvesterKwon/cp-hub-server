@@ -14,10 +14,13 @@ export class CodeforcesSyncCommand extends CommandRunner {
     passedParam: string[],
     options?: {
       round?: number;
+      all?: boolean;
     },
   ): Promise<void> {
     if (options?.round) {
       await this.problemSyncApplication.syncCodeforcesContest(options.round);
+    } else if (options?.all) {
+      await this.problemSyncApplication.syncAllCodeforcesContests();
     }
   }
 
@@ -33,7 +36,7 @@ export class CodeforcesSyncCommand extends CommandRunner {
     flags: '-a --all',
     description: 'Sync every round',
   })
-  parseType(val: string): number {
-    return Number(val);
+  parseAllFlag(val?: string): boolean {
+    return val === undefined || val === 'true';
   }
 }

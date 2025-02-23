@@ -1,6 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { firstValueFrom } from 'rxjs';
+import { catchError, firstValueFrom } from 'rxjs';
 
 /**
  * Client for Codeforces API.
@@ -17,12 +17,15 @@ export class CodeforcesClient {
   ): Promise<CodeforcesBaseResponse<T>> {
     // TODO: Add authorization if needed
     const res = await firstValueFrom(
-      this.httpService.get<CodeforcesBaseResponse<T>>(
-        `${this.baseUrl}/${methodName}`,
-        {
+      this.httpService
+        .get<CodeforcesBaseResponse<T>>(`${this.baseUrl}/${methodName}`, {
           params: { lang: 'en', ...params },
-        },
-      ),
+        })
+        .pipe(
+          catchError((err) => {
+            throw new Error(err.response?.data?.comment);
+          }),
+        ),
     );
     if (res.data.status === 'FAILED')
       // TODO: make it codeforces client error
