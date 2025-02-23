@@ -30,18 +30,27 @@ export class CodeforcesSyncService {
         count: 1,
       });
     const contestData = getContestStandingsResponse.result.contest;
+    const { contestType, detailedContestType } =
+      this.codeforcesService.classifyContestType(contestData.name);
     const problemsData = getContestStandingsResponse.result.problems;
 
+    if (contestData.phase !== 'FINISHED') {
+      console.log(`Contest ${contestId} is not finished yet`);
+      return;
+    }
+
     // sync contest
-    const contest = await this.contestRepository.upsertByTypeAndName({
-      name: contestData.name,
-      platformContestId: contestData.id.toString(),
-      type: codeforcesContestToContestTypeMapping[contestData.type],
-      startedAt: contestData.startTimeSeconds
-        ? new Date(contestData.startTimeSeconds * 1000)
-        : undefined,
-      durationSeconds: contestData.durationSeconds,
-    });
+    const contest =
+      await this.contestRepository.upsertByTypeAndPlatformContestId({
+        name: contestData.name,
+        platformContestId: contestData.id.toString(),
+        type: contestType,
+        detailedType: detailedContestType,
+        startedAt: contestData.startTimeSeconds
+          ? new Date(contestData.startTimeSeconds * 1000)
+          : undefined,
+        durationSeconds: contestData.durationSeconds,
+      });
 
     // sync problems
     const problemsEntityData = problemsData.map((problemData) => ({
@@ -74,9 +83,3 @@ export class CodeforcesSyncService {
     return contest;
   }
 }
-
-export const codeforcesContestToContestTypeMapping = {
-  CF: ContestType.CF,
-  IOI: ContestType.IOI,
-  ICPC: ContestType.ICPC,
-};

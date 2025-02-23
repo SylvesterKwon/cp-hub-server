@@ -13,12 +13,12 @@ export class ContestRepository extends EntityRepository<Contest> {
     return await this.findOne({ type, name });
   }
 
-  async upsertByTypeAndName(
+  async upsertByTypeAndPlatformContestId(
     data: RequiredEntityData<Contest>,
   ): Promise<Contest> {
     const existingContest = await this.findOne({
       type: data.type,
-      name: data.name,
+      platformContestId: data.platformContestId,
     });
     if (existingContest) return this.assign(existingContest, data);
     else return this.create(data);
