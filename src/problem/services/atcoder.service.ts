@@ -5,8 +5,8 @@ import { AtCoderProblemsContestInformation } from '../clients/atcoder-problems.c
 @Injectable()
 export class AtCoderService {
   constructor() {}
-  getProblemUrl(contestId: string, problemIndex: string) {
-    return `https://atcoder.jp/contests/${contestId}/tasks/${problemIndex}`;
+  getProblemUrl(contestId: string, problemId: string) {
+    return `https://atcoder.jp/contests/${contestId}/tasks/${problemId}`;
   }
   /**
    * AtCoder Contest Type Classifier

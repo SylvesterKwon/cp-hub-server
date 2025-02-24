@@ -99,7 +99,7 @@ export class AtCoderSyncService {
         {
           url: this.atCoderService.getProblemUrl(
             contestData.id,
-            problemData.index,
+            problemData.problemInfo.id,
           ),
         },
       ],
