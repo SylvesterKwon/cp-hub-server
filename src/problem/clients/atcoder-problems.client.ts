@@ -3,13 +3,13 @@ import { Injectable } from '@nestjs/common';
 import { catchError, firstValueFrom } from 'rxjs';
 
 /**
- * Client for Atcoder-problems API (Unofficial AtCoder API).
+ * Client for AtCoder-problems API (Unofficial AtCoder API).
  * [Reference](https://github.com/kenkoooo/AtCoderProblems/blob/master/doc/api.md)
  *
  * Thank you kenkoooo for providing the API!
  */
 @Injectable()
-export class AtcoderProblemsClient {
+export class AtCoderProblemsClient {
   private baseUrl = 'https://kenkoooo.com/atcoder/resources';
   constructor(private httpService: HttpService) {}
 

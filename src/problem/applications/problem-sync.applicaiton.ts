@@ -1,12 +1,14 @@
 import { MikroORM, Transactional } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { CodeforcesSyncService } from '../services/codeforces-sync.service';
+import { AtCoderSyncService } from '../services/atcoder-sync.service';
 
 @Injectable()
 export class ProblemSyncApplication {
   constructor(
     private orm: MikroORM,
     private codeforcesSyncService: CodeforcesSyncService,
+    private atCoderSyncService: AtCoderSyncService,
   ) {}
 
   @Transactional()
@@ -20,9 +22,11 @@ export class ProblemSyncApplication {
     }
   }
 
-  // @Transactional()
   async syncAllCodeforcesContests() {
     await this.codeforcesSyncService.syncAllContests();
-    // console.log(`Succesfully synced all Codeforces contest`);
+  }
+
+  async syncAllAtCoderContests() {
+    await this.atCoderSyncService.syncAllContests();
   }
 }

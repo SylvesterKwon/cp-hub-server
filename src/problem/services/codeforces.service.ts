@@ -74,7 +74,7 @@ export class CodeforcesService {
     else
       return {
         contestType: ContestType.CF,
-        detailedContestType: null,
+        detailedContestType: DetailedContestType.CF_ETC,
       };
   }
 }
