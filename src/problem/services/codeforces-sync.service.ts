@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { ProblemRepository } from '../repositories/problem.repository';
 import { ContestRepository } from '../repositories/contest.repository';
 import { CodeforcesClient } from '../clients/codeforces.client';
-import { ProblemSource } from '../entities/problem.entity';
 import { CodeforcesService } from './codeforces.service';
 import { ContestProblemsRepository } from '../repositories/contest-problems.repository';
 import { delay } from 'src/common/utils/delay';
@@ -28,8 +27,9 @@ export class CodeforcesSyncService {
 
     for (const contestData of contestsData) {
       try {
-        await this.syncOneContest(contestData.id);
-        this.contestRepository.getEntityManager().flush();
+        await this.orm.em.transactional(async () => {
+          await this.syncOneContest(contestData.id);
+        });
       } catch (e) {
         unsuccesfulSyncContestIds.push(contestData.id);
         console.error(`Failed to sync contest ${contestData.id}: ${e}`);
@@ -73,7 +73,6 @@ export class CodeforcesSyncService {
     // sync problems
     const problemsEntityData = problemsData.map((problemData) => ({
       name: problemData.name,
-      source: ProblemSource.CF,
       availableOnlineJudges: [
         {
           url: this.codeforcesService.getProblemUrl(

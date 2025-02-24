@@ -1,4 +1,5 @@
 import {
+  BigIntType,
   Collection,
   Entity,
   Enum,
@@ -30,7 +31,7 @@ export class Contest extends TimestampedEntity {
   @Property()
   startedAt?: Date;
 
-  @Property()
+  @Property({ type: new BigIntType('number') })
   durationSeconds?: number;
 
   @ManyToMany({ pivotEntity: () => ContestProblems })
@@ -40,6 +41,8 @@ export class Contest extends TimestampedEntity {
 export enum ContestType {
   CF = 'CF',
   IOI = 'IOI',
+  KOI = 'KOI',
+  JOI = 'JOI',
   ICPC = 'ICPC',
   BOJ = 'BOJ',
   USACO = 'USACO',
@@ -62,6 +65,14 @@ export enum DetailedContestType {
   CF_ETC = 'CF_ETC',
 
   // ATCODER
+  ATCODER_ABC = 'ATCODER_ABC',
+  ATCODER_ARC = 'ATCODER_ARC',
+  ATCODER_AGC = 'ATCODER_AGC',
+  // ATCODER_ABC_LIKE = 'ATCODER_ABC_LIKE',
+  // ATCODER_ARC_LIKE = 'ATCODER_ARC_LIKE',
+  // ATCODER_AGC_LIKE = 'ATCODER_AGC_LIKE',
+  ATCODER_ETC = 'ATCODER_ETC',
+
   // ...
 }
 
