@@ -38,6 +38,7 @@
     "class-validator": "^0.14.1",
     "cookie-parser": "^1.4.7",
     "dayjs": "^1.11.13",
+    "nanoid": "^5.1.2",
     "nest-commander": "^3.16.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
