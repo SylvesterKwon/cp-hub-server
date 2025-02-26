@@ -6,13 +6,13 @@ import {
   ManyToMany,
   Property,
 } from '@mikro-orm/core';
-import { TimestampedEntity } from 'src/common/entities/timestamped-entity.entity';
+import { TimestampedShortIdEntity } from 'src/common/entities/timestamped-entity.entity';
 import { ContestRepository } from '../repositories/contest.repository';
 import { Problem } from './problem.entity';
 import { ContestProblems } from './contest-problems.entity';
 
 @Entity({ repository: () => ContestRepository })
-export class Contest extends TimestampedEntity {
+export class Contest extends TimestampedShortIdEntity {
   @Property()
   name: string;
 

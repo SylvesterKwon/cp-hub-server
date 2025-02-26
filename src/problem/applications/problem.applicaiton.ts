@@ -9,7 +9,7 @@ export class ProblemApplication {
     private problemService: ProblemService,
   ) {}
 
-  async getProblemDetail(problemId: number) {
-    //
+  async getProblemDetail(problemId: string) {
+    // WIP
   }
 }
