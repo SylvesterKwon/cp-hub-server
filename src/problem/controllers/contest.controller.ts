@@ -1,6 +1,12 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
+import { ContestApplication } from '../applications/contest.applicaiton';
 
-@Controller('contests')
+@Controller('contest')
 export class ContestController {
-  constructor() {}
+  constructor(private contestApplication: ContestApplication) {}
+
+  @Get(':contestId')
+  async getProblemDetail(@Param('contestId') contestId: string) {
+    return await this.contestApplication.getContestDetail(contestId);
+  }
 }

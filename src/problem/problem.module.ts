@@ -17,6 +17,7 @@ import { ContestController } from './controllers/contest.controller';
 import { ProblemApplication } from './applications/problem.applicaiton';
 import { ContestService } from './services/contest.service';
 import { ProblemService } from './services/problem.service';
+import { ContestApplication } from './applications/contest.applicaiton';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ProblemService } from './services/problem.service';
     // Applications
     ProblemSyncApplication,
     ProblemApplication,
+    ContestApplication,
 
     // Services
     CodeforcesSyncService,

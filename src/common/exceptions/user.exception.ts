@@ -43,6 +43,7 @@ export class UserNotFoundException extends UserException {
   }
 }
 
+// TODO: remove enum
 export enum UserErrorCode {
   USERNAME_ALREADY_EXISTS = 'USERNAME_ALREADY_EXISTS',
   EMAIL_ALREADY_EXISTS = 'EMAIL_ALREADY_EXISTS',

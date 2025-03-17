@@ -1,7 +1,7 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ProblemApplication } from '../applications/problem.applicaiton';
 
-@Controller('problems')
+@Controller('problem')
 export class ProblemController {
   constructor(private problemApplication: ProblemApplication) {}
 

@@ -4,6 +4,7 @@ import {
   Entity,
   Enum,
   ManyToMany,
+  OneToMany,
   Property,
 } from '@mikro-orm/core';
 import { TimestampedShortIdEntity } from 'src/common/entities/timestamped-entity.entity';
@@ -36,6 +37,10 @@ export class Contest extends TimestampedShortIdEntity {
 
   @ManyToMany({ pivotEntity: () => ContestProblems })
   problems = new Collection<Problem>(this);
+
+  /** Problems with index */
+  @OneToMany(() => ContestProblems, (contestProblem) => contestProblem.contest)
+  contestProblems = new Collection<ContestProblems>(this);
 }
 
 export enum ContestType {
