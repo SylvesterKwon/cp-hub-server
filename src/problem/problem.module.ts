@@ -12,6 +12,12 @@ import { ContestProblems } from './entities/contest-problems.entity';
 import { AtCoderProblemsClient } from './clients/atcoder-problems.client';
 import { AtCoderSyncService } from './services/atcoder-sync.service';
 import { AtCoderService } from './services/atcoder.service';
+import { ProblemController } from './controllers/problem.controller';
+import { ContestController } from './controllers/contest.controller';
+import { ProblemApplication } from './applications/problem.applicaiton';
+import { ContestService } from './services/contest.service';
+import { ProblemService } from './services/problem.service';
+import { ContestApplication } from './applications/contest.applicaiton';
 
 @Module({
   imports: [
@@ -21,15 +27,24 @@ import { AtCoderService } from './services/atcoder.service';
     }),
   ],
   providers: [
+    // Applications
     ProblemSyncApplication,
-    CodeforcesClient,
+    ProblemApplication,
+    ContestApplication,
+
+    // Services
     CodeforcesSyncService,
     CodeforcesService,
-    AtCoderProblemsClient,
     AtCoderSyncService,
     AtCoderService,
+    ProblemService,
+    ContestService,
+
+    // Clients
+    CodeforcesClient,
+    AtCoderProblemsClient,
   ],
-  controllers: [],
+  controllers: [ContestController, ProblemController],
   exports: [ProblemSyncApplication],
 })
 export class ProblemModule {}

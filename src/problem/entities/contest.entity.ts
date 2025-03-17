@@ -4,15 +4,16 @@ import {
   Entity,
   Enum,
   ManyToMany,
+  OneToMany,
   Property,
 } from '@mikro-orm/core';
-import { TimestampedEntity } from 'src/common/entities/timestamped-entity.entity';
+import { TimestampedShortIdEntity } from 'src/common/entities/timestamped-entity.entity';
 import { ContestRepository } from '../repositories/contest.repository';
 import { Problem } from './problem.entity';
 import { ContestProblems } from './contest-problems.entity';
 
 @Entity({ repository: () => ContestRepository })
-export class Contest extends TimestampedEntity {
+export class Contest extends TimestampedShortIdEntity {
   @Property()
   name: string;
 
@@ -36,6 +37,10 @@ export class Contest extends TimestampedEntity {
 
   @ManyToMany({ pivotEntity: () => ContestProblems })
   problems = new Collection<Problem>(this);
+
+  /** Problems with index */
+  @OneToMany(() => ContestProblems, (contestProblem) => contestProblem.contest)
+  contestProblems = new Collection<ContestProblems>(this);
 }
 
 export enum ContestType {
