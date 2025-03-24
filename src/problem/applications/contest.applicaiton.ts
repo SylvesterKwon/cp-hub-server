@@ -21,12 +21,11 @@ export class ContestApplication {
     );
     if (!contest) throw new ContestNotFoundException();
 
-    console.log(contest);
-
     return {
       id: contest.id,
       name: contest.name,
       type: contest.type,
+      detailedType: contest.detailedType,
       platformContestId: contest.platformContestId,
       startedAt: contest.startedAt,
       durationSeconds: contest.durationSeconds,

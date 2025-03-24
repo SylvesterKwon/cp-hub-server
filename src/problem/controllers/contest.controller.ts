@@ -6,7 +6,7 @@ export class ContestController {
   constructor(private contestApplication: ContestApplication) {}
 
   @Get(':contestId')
-  async getProblemDetail(@Param('contestId') contestId: string) {
+  async getContestDetail(@Param('contestId') contestId: string) {
     return await this.contestApplication.getContestDetail(contestId);
   }
 }
