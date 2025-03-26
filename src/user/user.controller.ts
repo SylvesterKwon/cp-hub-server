@@ -9,7 +9,11 @@ import {
 } from '@nestjs/common';
 import { UserApplication } from './user.application';
 import { SignUpDto } from './dtos/user.dto';
-import { AuthenticationRequired } from 'src/common/decorators/auth.decorator';
+import {
+  AuthenticationRequired,
+  PermissionRequired,
+  RoleRequired,
+} from 'src/common/decorators/auth.decorator';
 import { UserId } from 'src/common/decorators/user.decorator';
 import { LocalAuthGuard } from './guards/local-auth.guards';
 import { Response } from 'express';
@@ -46,9 +50,16 @@ export class UserController {
   }
 
   // TODO: 권한 확인용 임시 API, 삭제 할 것
-  // @PermissionRequired('admin_only_permission_1')
-  // @Get('admin')
-  // getAdminPage(@UserId() userId: number) {
-  //   return userId;
-  // }
+  @PermissionRequired('admin_permission_1')
+  @Get('permission-check')
+  permissionCheck(@UserId() userId: number) {
+    return userId;
+  }
+
+  // TODO: 권한 확인용 임시 API, 삭제 할 것
+  @RoleRequired('ADMIN')
+  @Get('role-check')
+  roleCheck(@UserId() userId: number) {
+    return userId;
+  }
 }
