@@ -14,7 +14,7 @@ import {
   PermissionRequired,
   RoleRequired,
 } from 'src/common/decorators/auth.decorator';
-import { UserId } from 'src/common/decorators/user.decorator';
+import { RequesterId } from 'src/common/decorators/requester.decorator';
 import { LocalAuthGuard } from './guards/local-auth.guards';
 import { Response } from 'express';
 
@@ -25,7 +25,7 @@ export class UserController {
   @UseGuards(LocalAuthGuard)
   @Post('sign-in')
   async signIn(
-    @UserId() userId: string,
+    @RequesterId() userId: string,
     @Res({ passthrough: true }) response: Response,
     @Body('rememberMe') rememberMe?: boolean,
   ) {
@@ -45,21 +45,21 @@ export class UserController {
   // TODO: 권한 확인용 임시 API, 삭제 할 것
   @AuthenticationRequired()
   @Get('auth-check')
-  authCheck(@UserId() userId: number) {
+  authCheck(@RequesterId() userId: number) {
     return userId;
   }
 
   // TODO: 권한 확인용 임시 API, 삭제 할 것
   @PermissionRequired('admin_permission_1')
   @Get('permission-check')
-  permissionCheck(@UserId() userId: number) {
+  permissionCheck(@RequesterId() userId: number) {
     return userId;
   }
 
   // TODO: 권한 확인용 임시 API, 삭제 할 것
   @RoleRequired('ADMIN')
   @Get('role-check')
-  roleCheck(@UserId() userId: number) {
+  roleCheck(@RequesterId() userId: number) {
     return userId;
   }
 }

@@ -9,6 +9,7 @@ import {
 import { UserRepository } from 'src/user/repositories/user.repositories';
 import { UserNotFoundException } from 'src/common/exceptions/user.exception';
 import { EditorialService } from '../services/editorial.service';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class EditorialApplication {
@@ -21,7 +22,7 @@ export class EditorialApplication {
   ) {}
 
   @Transactional()
-  async updateEditorial(userId: string, problemId: string, content: string) {
+  async updateMyEditorial(userId: string, problemId: string, content: string) {
     const problem = await this.problemRepository.findOne({ id: problemId });
     if (!problem) throw new ProblemNotFoundException();
     const user = await this.userRepository.findOne({ id: userId });
@@ -40,7 +41,7 @@ export class EditorialApplication {
   }
 
   @Transactional()
-  async deleteEditorial(userId: string, problemId: string) {
+  async deleteMyEditorial(userId: string, problemId: string) {
     const editorial = await this.editorialRepository.findOne({
       author: { id: userId },
       problem: { id: problemId },
@@ -52,5 +53,38 @@ export class EditorialApplication {
     await this.editorialService.deleteEditorial(user, editorial);
 
     return { message: 'Editorial deleted successfully' };
+  }
+
+  async getProblemMyEditorial(problemId: string, user: User) {
+    const problem = await this.problemRepository.findOne({
+      id: problemId,
+    });
+    if (!problem) throw new ProblemNotFoundException();
+
+    return await this.editorialService.getEditorialList({
+      author: user,
+      problem,
+    });
+  }
+
+  async getProblemEditorialList(
+    problemId: string,
+    option: {
+      page?: number;
+      pageSize?: number;
+      sortBy?: string;
+    },
+  ) {
+    const problem = await this.problemRepository.findOne({
+      id: problemId,
+    });
+    if (!problem) throw new ProblemNotFoundException();
+
+    return await this.editorialService.getEditorialList({
+      problem,
+      page: option.page,
+      pageSize: option.pageSize,
+      sortBy: option.sortBy,
+    });
   }
 }
