@@ -56,11 +56,11 @@ export class ProblemController {
 
   @AuthenticationRequired()
   @Get(':problemId/my-editorial')
-  async getProblemMyEditorial(
+  async getMyProblemEditorial(
     @Param('problemId') problemId: string,
     @Requester() user: User,
   ) {
-    return await this.editorialApplication.getProblemMyEditorial(
+    return await this.editorialApplication.getMyProblemEditorial(
       problemId,
       user,
     );
@@ -82,7 +82,7 @@ export class ProblemController {
 
   @AuthenticationRequired()
   @Post(':problemId/my-editorial/update')
-  async udpateEditorial(
+  async updateMyProblemEditorial(
     @RequesterId() userid: string,
     @Param('problemId') problemId: string,
     @Body() dto: UpdateEditorialDto,
@@ -96,7 +96,7 @@ export class ProblemController {
 
   @AuthenticationRequired()
   @Post(':problemId/my-editorial/delete')
-  async deleteEditorial(
+  async deleteMyProblemEditorial(
     @RequesterId() userid: string,
     @Param('problemId') problemId: string,
   ) {

@@ -68,15 +68,7 @@ export class EditorialService {
       });
 
     return {
-      results: editorials.map((editorial) => ({
-        id: editorial.id,
-        createdAt: editorial.createdAt,
-        updatedAt: editorial.updatedAt,
-        content: editorial.content,
-        author: {
-          username: editorial.author.username,
-        },
-      })),
+      editorials,
       totalCount,
     };
   }

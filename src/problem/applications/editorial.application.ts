@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EditorialRepository } from '../repositories/editorial.repository';
-import { MikroORM, Transactional } from '@mikro-orm/core';
+import { Loaded, MikroORM, Transactional } from '@mikro-orm/core';
 import { ProblemRepository } from '../repositories/problem.repository';
 import {
   EditorialNotFoundException,
@@ -10,6 +10,7 @@ import { UserRepository } from 'src/user/repositories/user.repositories';
 import { UserNotFoundException } from 'src/common/exceptions/user.exception';
 import { EditorialService } from '../services/editorial.service';
 import { User } from 'src/user/entities/user.entity';
+import { Editorial } from '../entities/editorial.entity';
 
 @Injectable()
 export class EditorialApplication {
@@ -21,6 +22,7 @@ export class EditorialApplication {
     private userRepository: UserRepository,
   ) {}
 
+  // TODO: updateMyEditorial, deleteMyEditorial 을 대응되는 controller 메서드명으로 수정하고 공통 로직을 service 레이어에 추상화
   @Transactional()
   async updateMyEditorial(userId: string, problemId: string, content: string) {
     const problem = await this.problemRepository.findOne({ id: problemId });
@@ -55,16 +57,20 @@ export class EditorialApplication {
     return { message: 'Editorial deleted successfully' };
   }
 
-  async getProblemMyEditorial(problemId: string, user: User) {
+  async getMyProblemEditorial(problemId: string, user: User) {
     const problem = await this.problemRepository.findOne({
       id: problemId,
     });
     if (!problem) throw new ProblemNotFoundException();
 
-    return await this.editorialService.getEditorialList({
+    const { editorials } = await this.editorialService.getEditorialList({
       author: user,
       problem,
     });
+
+    if (!editorials.length) throw new EditorialNotFoundException();
+
+    return this.convertEditorialToDto(editorials[0]);
   }
 
   async getProblemEditorialList(
@@ -80,11 +86,31 @@ export class EditorialApplication {
     });
     if (!problem) throw new ProblemNotFoundException();
 
-    return await this.editorialService.getEditorialList({
-      problem,
-      page: option.page,
-      pageSize: option.pageSize,
-      sortBy: option.sortBy,
-    });
+    const { editorials, totalCount } =
+      await this.editorialService.getEditorialList({
+        problem,
+        page: option.page,
+        pageSize: option.pageSize,
+        sortBy: option.sortBy,
+      });
+
+    return {
+      results: editorials.map(this.convertEditorialToDto),
+      totalCount: totalCount,
+    };
+  }
+
+  private convertEditorialToDto(
+    editorial: Loaded<Editorial, 'author', '*', never>,
+  ) {
+    return {
+      id: editorial.id,
+      createdAt: editorial.createdAt,
+      updatedAt: editorial.updatedAt,
+      content: editorial.content,
+      author: {
+        username: editorial.author.username,
+      },
+    };
   }
 }
