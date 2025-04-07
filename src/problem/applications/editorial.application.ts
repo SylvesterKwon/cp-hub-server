@@ -113,6 +113,8 @@ export class EditorialApplication {
       author: {
         username: editorial.author.username,
       },
+      upvoteCount: editorial.denormalizedInfo.upvoteCount,
+      downvoteCount: editorial.denormalizedInfo.downvoteCount,
     };
   }
 
