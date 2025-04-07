@@ -1,5 +1,5 @@
 ## Description
-API Server for CP-Hub. Built with nestjs.
+API Server for CP-Hub. Built with nest.js.
 
 ## Installation
 WIP...
@@ -11,7 +11,7 @@ $ pnpm i
 
 Run server in debug mode:
 ```bash
-$ pnpm start:dev
+$ pnpm dev
 ```
 
 ## Using CLI

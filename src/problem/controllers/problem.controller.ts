@@ -15,7 +15,7 @@ import {
   Requester,
   RequesterId,
 } from 'src/common/decorators/requester.decorator';
-import { UpdateEditorialDto } from './dtos/editorial.dto';
+import { UpdateEditorialDto } from '../dtos/editorial.dto';
 import { User } from 'src/user/entities/user.entity';
 
 @Controller('problem')

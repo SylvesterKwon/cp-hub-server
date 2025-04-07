@@ -11,6 +11,7 @@ import { UserNotFoundException } from 'src/common/exceptions/user.exception';
 import { EditorialService } from '../services/editorial.service';
 import { User } from 'src/user/entities/user.entity';
 import { Editorial } from '../entities/editorial.entity';
+import { EditorialVoteAction, VoteService } from '../services/vote.service';
 
 @Injectable()
 export class EditorialApplication {
@@ -20,6 +21,7 @@ export class EditorialApplication {
     private editorialRepository: EditorialRepository,
     private problemRepository: ProblemRepository,
     private userRepository: UserRepository,
+    private voteService: VoteService,
   ) {}
 
   // TODO: updateMyEditorial, deleteMyEditorial 을 대응되는 controller 메서드명으로 수정하고 공통 로직을 service 레이어에 추상화
@@ -111,6 +113,23 @@ export class EditorialApplication {
       author: {
         username: editorial.author.username,
       },
+    };
+  }
+
+  @Transactional()
+  async voteEditorial(
+    editorialId: string,
+    user: User,
+    action: EditorialVoteAction,
+  ) {
+    const editorial = await this.editorialRepository.findOne({
+      id: editorialId,
+    });
+    if (!editorial) throw new EditorialNotFoundException();
+    await this.voteService.voteEditorial(editorial, user, action);
+
+    return {
+      message: 'Voted successfully',
     };
   }
 }
