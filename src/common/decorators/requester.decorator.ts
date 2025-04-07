@@ -1,13 +1,13 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { User as UserEntity } from 'src/user/entities/user.entity';
 
 /**
  * @description Get user object from request
  */
-export const User = createParamDecorator(
-  (data: string, ctx: ExecutionContext) => {
+export const Requester = createParamDecorator<keyof UserEntity | undefined>(
+  (data, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
-    const user = request.user;
-
+    const user: UserEntity | undefined = request.user;
     return data ? user?.[data] : user;
   },
 );
@@ -16,7 +16,7 @@ export const User = createParamDecorator(
  * @description Get user id from request
  * Short abbreviation of User('id')
  */
-export const UserId = createParamDecorator(
+export const RequesterId = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): number | null => {
     const request = ctx.switchToHttp().getRequest();
     const user = request.user;

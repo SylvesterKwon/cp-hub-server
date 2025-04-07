@@ -29,6 +29,7 @@ export class ProblemApplication {
         id: contest.id,
         name: contest.name,
         type: contest.type,
+        detailedType: contest.detailedType,
       })),
       availableOnlineJudges: problem.availableOnlineJudges,
     };

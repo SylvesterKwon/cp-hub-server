@@ -18,3 +18,9 @@ export class ContestNotFoundException extends ProblemException {
     super('CONTEST_NOT_FOUND', HttpStatus.NOT_FOUND);
   }
 }
+
+export class EditorialNotFoundException extends ProblemException {
+  constructor() {
+    super('EDITORIAL_NOT_FOUND', HttpStatus.NOT_FOUND);
+  }
+}

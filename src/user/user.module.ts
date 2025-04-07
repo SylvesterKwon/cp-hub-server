@@ -9,10 +9,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthService } from './auth.service';
+import { Permission } from './entities/permission.entity';
+import { Role } from './entities/role.entity';
 
 @Module({
   imports: [
-    MikroOrmModule.forFeature({ entities: [User] }),
+    MikroOrmModule.forFeature({ entities: [User, Permission, Role] }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -29,6 +31,7 @@ import { AuthService } from './auth.service';
     LocalStrategy,
     JwtStrategy,
   ],
+  exports: [AuthService],
   controllers: [UserController],
 })
 export class UserModule {}

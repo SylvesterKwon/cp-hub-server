@@ -18,17 +18,24 @@ import { ProblemApplication } from './applications/problem.applicaiton';
 import { ContestService } from './services/contest.service';
 import { ProblemService } from './services/problem.service';
 import { ContestApplication } from './applications/contest.applicaiton';
+import { EditorialService } from './services/editorial.service';
+import { Editorial } from './entities/editorial.entity';
+import { UserModule } from 'src/user/user.module';
+import { EditorialApplication } from './applications/editorial.application';
+import { User } from 'src/user/entities/user.entity';
 
 @Module({
   imports: [
     HttpModule,
     MikroOrmModule.forFeature({
-      entities: [Problem, Contest, ContestProblems, Tag],
+      entities: [Problem, Contest, ContestProblems, Tag, Editorial, User],
     }),
+    UserModule,
   ],
   providers: [
     // Applications
     ProblemSyncApplication,
+    EditorialApplication,
     ProblemApplication,
     ContestApplication,
 
@@ -39,6 +46,7 @@ import { ContestApplication } from './applications/contest.applicaiton';
     AtCoderService,
     ProblemService,
     ContestService,
+    EditorialService,
 
     // Clients
     CodeforcesClient,

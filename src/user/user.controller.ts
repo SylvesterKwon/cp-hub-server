@@ -9,8 +9,12 @@ import {
 } from '@nestjs/common';
 import { UserApplication } from './user.application';
 import { SignUpDto } from './dtos/user.dto';
-import { AuthenticationRequired } from 'src/common/decorators/auth.decorator';
-import { UserId } from 'src/common/decorators/user.decorator';
+import {
+  AuthenticationRequired,
+  PermissionRequired,
+  RoleRequired,
+} from 'src/common/decorators/auth.decorator';
+import { RequesterId } from 'src/common/decorators/requester.decorator';
 import { LocalAuthGuard } from './guards/local-auth.guards';
 import { Response } from 'express';
 
@@ -21,7 +25,7 @@ export class UserController {
   @UseGuards(LocalAuthGuard)
   @Post('sign-in')
   async signIn(
-    @UserId() userId: string,
+    @RequesterId() userId: string,
     @Res({ passthrough: true }) response: Response,
     @Body('rememberMe') rememberMe?: boolean,
   ) {
@@ -41,14 +45,21 @@ export class UserController {
   // TODO: 권한 확인용 임시 API, 삭제 할 것
   @AuthenticationRequired()
   @Get('auth-check')
-  authCheck(@UserId() userId: number) {
+  authCheck(@RequesterId() userId: number) {
     return userId;
   }
 
   // TODO: 권한 확인용 임시 API, 삭제 할 것
-  // @PermissionRequired('admin_only_permission_1')
-  // @Get('admin')
-  // getAdminPage(@UserId() userId: number) {
-  //   return userId;
-  // }
+  @PermissionRequired('admin_permission_1')
+  @Get('permission-check')
+  permissionCheck(@RequesterId() userId: number) {
+    return userId;
+  }
+
+  // TODO: 권한 확인용 임시 API, 삭제 할 것
+  @RoleRequired('ADMIN')
+  @Get('role-check')
+  roleCheck(@RequesterId() userId: number) {
+    return userId;
+  }
 }
