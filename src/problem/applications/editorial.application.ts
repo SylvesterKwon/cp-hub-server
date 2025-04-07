@@ -132,6 +132,11 @@ export class EditorialApplication {
 
     return {
       message: 'Voted successfully',
+      data: {
+        editorialId: editorial.id,
+        upvoteCount: editorial.denormalizedInfo.upvoteCount,
+        downvoteCount: editorial.denormalizedInfo.downvoteCount,
+      },
     };
   }
 }
