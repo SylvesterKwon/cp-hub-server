@@ -2,10 +2,10 @@ import { Injectable, NotImplementedException } from '@nestjs/common';
 import { UserService } from './services/user.service';
 import { SignUpDto } from './dtos/user.dto';
 import { Transactional } from '@mikro-orm/core';
-import { UserNotFoundException } from 'src/common/exceptions/user.exception';
 import { AuthService } from './auth.service';
 import { UserRepository } from './repositories/user.repositories';
 import { Response } from 'express';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserApplication {
@@ -15,10 +15,7 @@ export class UserApplication {
     private userRepository: UserRepository,
   ) {}
 
-  async signIn(response: Response, userId: string, rememberMe?: boolean) {
-    const user = await this.userRepository.findById(userId);
-    if (!user) throw new UserNotFoundException();
-
+  async signIn(response: Response, user: User, rememberMe?: boolean) {
     const accessToken = this.authService.signIn(user, rememberMe);
     const expiresDate = new Date();
     expiresDate.setDate(expiresDate.getDate() + (rememberMe ? 30 : 1));

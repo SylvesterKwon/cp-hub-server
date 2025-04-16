@@ -1,6 +1,7 @@
 import {
   Collection,
   Entity,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   Property,
@@ -29,5 +30,8 @@ export class User extends TimestampedEntity {
   role?: Ref<Role>;
 
   @OneToMany(() => Editorial, (editorial) => editorial.author)
-  editorials = new Collection<Editorial>(this);
+  authoredEditorials = new Collection<Editorial>(this);
+
+  @ManyToMany(() => Editorial, (editorial) => editorial.votedBy)
+  votedEditorials = new Collection<Editorial>(this);
 }

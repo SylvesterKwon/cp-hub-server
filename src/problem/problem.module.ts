@@ -23,12 +23,23 @@ import { Editorial } from './entities/editorial.entity';
 import { UserModule } from 'src/user/user.module';
 import { EditorialApplication } from './applications/editorial.application';
 import { User } from 'src/user/entities/user.entity';
+import { EditorialVotes } from './entities/editorial-votes.entity';
+import { VoteService } from './services/vote.service';
+import { EditorialController } from './controllers/editorial.controller';
 
 @Module({
   imports: [
     HttpModule,
     MikroOrmModule.forFeature({
-      entities: [Problem, Contest, ContestProblems, Tag, Editorial, User],
+      entities: [
+        Problem,
+        Contest,
+        ContestProblems,
+        Tag,
+        Editorial,
+        User,
+        EditorialVotes,
+      ],
     }),
     UserModule,
   ],
@@ -47,12 +58,13 @@ import { User } from 'src/user/entities/user.entity';
     ProblemService,
     ContestService,
     EditorialService,
+    VoteService,
 
     // Clients
     CodeforcesClient,
     AtCoderProblemsClient,
   ],
-  controllers: [ContestController, ProblemController],
+  controllers: [ContestController, ProblemController, EditorialController],
   exports: [ProblemSyncApplication],
 })
 export class ProblemModule {}

@@ -7,10 +7,10 @@ import {
   ProblemNotFoundException,
 } from 'src/common/exceptions/problem.exception';
 import { UserRepository } from 'src/user/repositories/user.repositories';
-import { UserNotFoundException } from 'src/common/exceptions/user.exception';
 import { EditorialService } from '../services/editorial.service';
 import { User } from 'src/user/entities/user.entity';
 import { Editorial } from '../entities/editorial.entity';
+import { EditorialVoteAction, VoteService } from '../services/vote.service';
 
 @Injectable()
 export class EditorialApplication {
@@ -20,15 +20,14 @@ export class EditorialApplication {
     private editorialRepository: EditorialRepository,
     private problemRepository: ProblemRepository,
     private userRepository: UserRepository,
+    private voteService: VoteService,
   ) {}
 
   // TODO: updateMyEditorial, deleteMyEditorial 을 대응되는 controller 메서드명으로 수정하고 공통 로직을 service 레이어에 추상화
   @Transactional()
-  async updateMyEditorial(userId: string, problemId: string, content: string) {
+  async updateMyEditorial(user: User, problemId: string, content: string) {
     const problem = await this.problemRepository.findOne({ id: problemId });
     if (!problem) throw new ProblemNotFoundException();
-    const user = await this.userRepository.findOne({ id: userId });
-    if (!user) throw new UserNotFoundException();
 
     const editorial = await this.editorialService.updateEditorial(
       user,
@@ -43,14 +42,12 @@ export class EditorialApplication {
   }
 
   @Transactional()
-  async deleteMyEditorial(userId: string, problemId: string) {
+  async deleteMyEditorial(user: User, problemId: string) {
     const editorial = await this.editorialRepository.findOne({
-      author: { id: userId },
+      author: user,
       problem: { id: problemId },
     });
     if (!editorial) throw new EditorialNotFoundException();
-    const user = await this.userRepository.findOne({ id: userId });
-    if (!user) throw new UserNotFoundException();
 
     await this.editorialService.deleteEditorial(user, editorial);
 
@@ -80,6 +77,7 @@ export class EditorialApplication {
       pageSize?: number;
       sortBy?: string;
     },
+    requester?: User,
   ) {
     const problem = await this.problemRepository.findOne({
       id: problemId,
@@ -94,8 +92,26 @@ export class EditorialApplication {
         sortBy: option.sortBy,
       });
 
+    let results = editorials.map(this.convertEditorialToDto);
+
+    if (requester) {
+      const voteStatuses = await this.voteService.getVoteStatuses(
+        requester,
+        editorials,
+      );
+      results = results.map((editorial) => {
+        const voteStatus = voteStatuses.find(
+          (vote) => vote.editorialId === editorial.id,
+        );
+        return {
+          ...editorial,
+          myVote: voteStatus?.voteType,
+        };
+      });
+    }
+
     return {
-      results: editorials.map(this.convertEditorialToDto),
+      results: results,
       totalCount: totalCount,
     };
   }
@@ -110,6 +126,31 @@ export class EditorialApplication {
       content: editorial.content,
       author: {
         username: editorial.author.username,
+      },
+      upvoteCount: editorial.denormalizedInfo.upvoteCount,
+      downvoteCount: editorial.denormalizedInfo.downvoteCount,
+    };
+  }
+
+  @Transactional()
+  async voteEditorial(
+    editorialId: string,
+    user: User,
+    action: EditorialVoteAction,
+  ) {
+    const editorial = await this.editorialRepository.findOne({
+      id: editorialId,
+    });
+    if (!editorial) throw new EditorialNotFoundException();
+    await this.voteService.voteEditorial(editorial, user, action);
+
+    return {
+      message: 'Voted successfully',
+      data: {
+        editorialId: editorial.id,
+        upvoteCount: editorial.denormalizedInfo.upvoteCount,
+        downvoteCount: editorial.denormalizedInfo.downvoteCount,
+        myVote: { upvote: 'upvote', downvote: 'downvote', undo: null }[action],
       },
     };
   }

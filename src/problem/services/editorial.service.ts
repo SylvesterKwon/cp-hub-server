@@ -7,12 +7,14 @@ import { UnauthorizedException } from 'src/common/exceptions/user.exception';
 import { RoleType } from 'src/user/entities/role.entity';
 import { AuthService } from 'src/user/auth.service';
 import { FilterQuery } from '@mikro-orm/core';
+import { EditorialVotesRepository } from '../repositories/editorial-votes.repository';
 
 @Injectable()
 export class EditorialService {
   constructor(
     private editorialRepository: EditorialRepository,
     private authService: AuthService,
+    private editorialVotesRepository: EditorialVotesRepository,
   ) {}
 
   async updateEditorial(user: User, problem: Problem, content: string) {

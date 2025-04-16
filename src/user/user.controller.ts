@@ -14,9 +14,10 @@ import {
   PermissionRequired,
   RoleRequired,
 } from 'src/common/decorators/auth.decorator';
-import { RequesterId } from 'src/common/decorators/requester.decorator';
+import { Requester } from 'src/common/decorators/requester.decorator';
 import { LocalAuthGuard } from './guards/local-auth.guards';
 import { Response } from 'express';
+import { User } from './entities/user.entity';
 
 @Controller('user')
 export class UserController {
@@ -25,11 +26,11 @@ export class UserController {
   @UseGuards(LocalAuthGuard)
   @Post('sign-in')
   async signIn(
-    @RequesterId() userId: string,
+    @Requester() user: User,
     @Res({ passthrough: true }) response: Response,
     @Body('rememberMe') rememberMe?: boolean,
   ) {
-    return await this.userApplication.signIn(response, userId, rememberMe);
+    return await this.userApplication.signIn(response, user, rememberMe);
   }
 
   @Post('sign-up')
@@ -45,21 +46,21 @@ export class UserController {
   // TODO: 권한 확인용 임시 API, 삭제 할 것
   @AuthenticationRequired()
   @Get('auth-check')
-  authCheck(@RequesterId() userId: number) {
-    return userId;
+  authCheck(@Requester() user: User) {
+    return user;
   }
 
   // TODO: 권한 확인용 임시 API, 삭제 할 것
   @PermissionRequired('admin_permission_1')
   @Get('permission-check')
-  permissionCheck(@RequesterId() userId: number) {
-    return userId;
+  permissionCheck(@Requester() user: User) {
+    return user;
   }
 
   // TODO: 권한 확인용 임시 API, 삭제 할 것
   @RoleRequired('ADMIN')
   @Get('role-check')
-  roleCheck(@RequesterId() userId: number) {
-    return userId;
+  roleCheck(@Requester() user: User) {
+    return user;
   }
 }
