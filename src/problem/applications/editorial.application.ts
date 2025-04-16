@@ -150,6 +150,7 @@ export class EditorialApplication {
         editorialId: editorial.id,
         upvoteCount: editorial.denormalizedInfo.upvoteCount,
         downvoteCount: editorial.denormalizedInfo.downvoteCount,
+        myVote: { upvote: 'upvote', downvote: 'downvote', undo: null }[action],
       },
     };
   }
