@@ -79,6 +79,18 @@ export class VoteService {
       type: EditorialVoteType.DOWNVOTE,
     });
   }
+
+  async getVoteStatuses(user: User, editorials: Editorial[]) {
+    const result = await this.editorialVotesRepository.find({
+      user,
+      editorial: { $in: editorials },
+    });
+    return editorials.map((editorial) => ({
+      editorialId: editorial.id,
+      voteType:
+        result.find((vote) => vote.editorial.id === editorial.id)?.type ?? null,
+    }));
+  }
 }
 
 export enum EditorialVoteAction {
