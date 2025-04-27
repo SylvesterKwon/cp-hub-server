@@ -14,6 +14,8 @@ import { User } from 'src/user/entities/user.entity';
 import { EditorialRepository } from '../repositories/editorial.repository';
 import { EditorialVotes } from './editorial-votes.entity';
 
+const intialExponentialDecayScore = 100;
+
 export type EditorialDenormalizedInfo = {
   upvoteCount: number;
   downvoteCount: number;
@@ -21,24 +23,21 @@ export type EditorialDenormalizedInfo = {
     lowerBound: number;
     upperBound: number;
   };
-  exponentialDecayScore: number;
-  exponentialDecayScoreUpdatedAt: Date | null;
+  exponentialDecayScore: {
+    value: number;
+    valueUpdatedAt: Date | null;
+    cachedValue: number;
+  };
 };
 
-const defaultDenormalizedInfo: EditorialDenormalizedInfo = {
-  upvoteCount: 0,
-  downvoteCount: 0,
-  wilsonScoreInterval: {
-    lowerBound: 0,
-    upperBound: 0,
-  }, // TODO: calculate when vote is {0,0}
-  exponentialDecayScore: 0,
-  exponentialDecayScoreUpdatedAt: null,
-};
-
+@Index({
+  expression: `
+  CREATE INDEX denormalized_info_wilson_score_interval_lower_bound_float ON editorial (((denormalized_info->'wilsonScoreInterval'->'lowerBound')::float));
+  `,
+  // Currently not using index below (consider this when many editorials are registered in one problem)
+  // CREATE INDEX denormalized_info_exponential_decay_score_cached_value_float ON editorial (((denormalized_info->'exponentialDecayScore'->'cachedValue')::float));
+})
 @Entity({ repository: () => EditorialRepository })
-@Index({ properties: 'denormalizedInfo.wilsonScoreInterval.lowerBound' })
-@Index({ properties: 'denormalizedInfo.exponentialDecayScore' })
 export class Editorial extends TimestampedEntity {
   @ManyToOne()
   problem: Problem;
@@ -54,7 +53,18 @@ export class Editorial extends TimestampedEntity {
 
   @Property({
     type: JsonType,
-    default: JSON.stringify(defaultDenormalizedInfo),
   })
-  denormalizedInfo: EditorialDenormalizedInfo & Opt;
+  denormalizedInfo: EditorialDenormalizedInfo & Opt = {
+    upvoteCount: 0,
+    downvoteCount: 0,
+    wilsonScoreInterval: {
+      lowerBound: 0,
+      upperBound: 0,
+    }, // TODO: calculate when vote is {0,0}
+    exponentialDecayScore: {
+      value: intialExponentialDecayScore,
+      valueUpdatedAt: new Date(),
+      cachedValue: intialExponentialDecayScore,
+    },
+  };
 }

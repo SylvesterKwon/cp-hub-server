@@ -11,6 +11,7 @@ import { EditorialService } from '../services/editorial.service';
 import { User } from 'src/user/entities/user.entity';
 import { Editorial } from '../entities/editorial.entity';
 import { EditorialVoteAction, VoteService } from '../services/vote.service';
+import { EditorialListSortBy } from '../types/editorial.type';
 
 @Injectable()
 export class EditorialApplication {
@@ -70,12 +71,13 @@ export class EditorialApplication {
     return this.convertEditorialToDto(editorials[0]);
   }
 
+  @Transactional()
   async getProblemEditorialList(
     problemId: string,
     option: {
       page?: number;
       pageSize?: number;
-      sortBy?: string;
+      sortBy?: EditorialListSortBy;
     },
     requester?: User,
   ) {
