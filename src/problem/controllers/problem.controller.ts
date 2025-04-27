@@ -14,6 +14,7 @@ import { AuthenticationRequired } from 'src/common/decorators/auth.decorator';
 import { Requester } from 'src/common/decorators/requester.decorator';
 import { UpdateEditorialDto } from '../dtos/editorial.dto';
 import { User } from 'src/user/entities/user.entity';
+import { EditorialListSortBy } from '../types/editorial.type';
 
 @Controller('problem')
 export class ProblemController {
@@ -68,7 +69,7 @@ export class ProblemController {
     @Param('problemId') problemId: string,
     @Query('page', new ParseIntPipe({ optional: true })) page?: number,
     @Query('pageSize', new ParseIntPipe({ optional: true })) pageSize?: number,
-    @Query('sortBy') sortBy?: string, // TODO: make it enum
+    @Query('sortBy') sortBy?: EditorialListSortBy, // TODO: add validation
     @Requester() requester?: User,
   ) {
     return await this.editorialApplication.getProblemEditorialList(

@@ -12,10 +12,12 @@ import {
   SelfVoteException,
   VoteNotFoundException,
 } from 'src/common/exceptions/vote.exception';
+import { EditorialService } from './editorial.service';
 
 @Injectable()
 export class VoteService {
   constructor(
+    private editorialService: EditorialService,
     private editorialRepository: EditorialRepository,
     private editorialVotesRepository: EditorialVotesRepository,
   ) {}
@@ -47,8 +49,11 @@ export class VoteService {
     }
     if (action === EditorialVoteAction.UNDO) return;
 
-    if (action === EditorialVoteAction.UPVOTE) this.upvote(editorial, user);
-    else if (action === EditorialVoteAction.DOWNVOTE)
+    if (action === EditorialVoteAction.UPVOTE) {
+      this.upvote(editorial, user);
+      // When upvote, recalculate EDS and cache
+      this.editorialService.recalculateExponentialDecayScore(editorial, 100);
+    } else if (action === EditorialVoteAction.DOWNVOTE)
       this.downvote(editorial, user);
   }
 
