@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { MikroORM, Transactional } from '@mikro-orm/core';
 import { AddCommentDto } from '../dtos/comment.dto';
 import { User } from 'src/user/entities/user.entity';
@@ -6,12 +6,15 @@ import { CommentRepository } from '../repositories/comment.repository';
 import {
   CommentContextNotFoundException,
   CommentDepthExceedsLimitException,
+  CommentNotFoundException,
   ParentCommentNotFoundException,
 } from '../exceptions/comment.exception';
 import {
   COMMENT_DEPTH_LIMIT,
   CommentService,
 } from '../services/comment.service';
+import { AuthService } from 'src/user/auth.service';
+import { RoleType } from 'src/user/entities/role.entity';
 
 @Injectable()
 export class CommentApplication {
@@ -19,6 +22,7 @@ export class CommentApplication {
     private orm: MikroORM,
     private commentService: CommentService,
     private commentRepository: CommentRepository,
+    private authService: AuthService,
   ) {}
 
   @Transactional()
@@ -44,5 +48,24 @@ export class CommentApplication {
       depth,
     });
     return { message: 'Comment added successfully', commentId: comment.id };
+  }
+
+  @Transactional()
+  async deleteComment(user: User, commentId: string) {
+    const isAdmin = await this.authService.checkIfUserInRole(
+      user,
+      RoleType.ADMIN,
+    );
+    const comment = await this.commentRepository.findOne({
+      id: commentId,
+    });
+    if (!comment) throw new CommentNotFoundException();
+    if (!isAdmin && comment.author.id !== user.id)
+      throw new UnauthorizedException();
+
+    comment.isDeleted = true;
+    comment.content = undefined;
+
+    return { message: 'Comment deleted successfully', commentId: comment.id };
   }
 }

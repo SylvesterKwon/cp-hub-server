@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Param, Post } from '@nestjs/common';
 import { CommentApplication } from '../applications/comment.application';
 import { AuthenticationRequired } from 'src/common/decorators/auth.decorator';
 import { Requester } from 'src/common/decorators/requester.decorator';
@@ -11,7 +11,6 @@ export class CommentController {
 
   // TODO: Get comment
 
-  // TODO: Add comment
   @AuthenticationRequired()
   @Post('add')
   async addComment(@Requester() user: User, @Body() dto: AddCommentDto) {
@@ -20,5 +19,12 @@ export class CommentController {
 
   // TODO: Edit comment
 
-  // TODO: Delete comment
+  @AuthenticationRequired()
+  @Post('delete/:commentId')
+  async deleteComment(
+    @Requester() user: User,
+    @Param('commentId') commentId: string,
+  ) {
+    return await this.commentApplication.deleteComment(user, commentId);
+  }
 }

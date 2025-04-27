@@ -47,5 +47,5 @@ export class Comment extends TimestampedEntity {
   depth: number;
 
   @Property({ columnType: 'text' })
-  content: string;
+  content?: string;
 }
