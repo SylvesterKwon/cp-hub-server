@@ -32,7 +32,7 @@ export class Comment extends TimestampedEntity {
   context: CommentContext;
 
   @Property()
-  isDeleted: boolean & Opt = false;
+  isDeleted: Opt<boolean> = false;
 
   @ManyToOne()
   author: User;

@@ -1,6 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { MikroORM, Transactional } from '@mikro-orm/core';
-import { AddCommentDto, EditCommentDto } from '../dtos/comment.dto';
+import {
+  AddCommentDto,
+  CommentContextDto,
+  EditCommentDto,
+} from '../dtos/comment.dto';
 import { User } from 'src/user/entities/user.entity';
 import { CommentRepository } from '../repositories/comment.repository';
 import {
@@ -15,6 +19,8 @@ import {
 } from '../services/comment.service';
 import { AuthService } from 'src/user/auth.service';
 import { RoleType } from 'src/user/entities/role.entity';
+import { Comment } from '../entities/comment.entity';
+import { CommentResponse } from '../types/comment-response.dto';
 
 @Injectable()
 export class CommentApplication {
@@ -24,6 +30,42 @@ export class CommentApplication {
     private commentRepository: CommentRepository,
     private authService: AuthService,
   ) {}
+
+  async getComments(dto: CommentContextDto) {
+    // TODO: Add pagination
+    const context = await this.commentService.getContext(dto);
+    if (!context) throw new CommentContextNotFoundException();
+
+    const comments = await this.commentRepository.find(
+      { context: dto },
+      { orderBy: { createdAt: 'desc' }, populate: ['author'] },
+    );
+
+    const ancestorComments = comments.filter((comment) => comment.depth === 0);
+
+    const convertToCommentResponse = (comment: Comment): CommentResponse => {
+      return {
+        isDeleted: comment.isDeleted,
+        content: comment.content,
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+        author: comment.isDeleted
+          ? undefined
+          : {
+              username: comment.author.username,
+              profilePictureUrl: comment.author.profilePictureUrl,
+            },
+        childComments: comments
+          .filter((item) => item.parentComment?.id === comment.id)
+          .map(convertToCommentResponse),
+      };
+    };
+
+    const results = ancestorComments.map(convertToCommentResponse);
+    return {
+      results: results,
+    };
+  }
 
   @Transactional()
   async addComment(user: User, dto: AddCommentDto) {

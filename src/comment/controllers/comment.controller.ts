@@ -1,15 +1,22 @@
-import { Body, Controller, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { CommentApplication } from '../applications/comment.application';
 import { AuthenticationRequired } from 'src/common/decorators/auth.decorator';
 import { Requester } from 'src/common/decorators/requester.decorator';
 import { User } from 'src/user/entities/user.entity';
-import { AddCommentDto, EditCommentDto } from '../dtos/comment.dto';
+import {
+  AddCommentDto,
+  CommentContextDto,
+  EditCommentDto,
+} from '../dtos/comment.dto';
 
 @Controller('comment')
 export class CommentController {
   constructor(private readonly commentApplication: CommentApplication) {}
 
-  // TODO: Get comment
+  @Get(':type/:id')
+  async getComments(@Param() dto: CommentContextDto) {
+    return await this.commentApplication.getComments(dto);
+  }
 
   @AuthenticationRequired()
   @Post('add')
