@@ -1,7 +1,7 @@
 import { Injectable, NotImplementedException } from '@nestjs/common';
 import { UserService } from './services/user.service';
 import { SignUpDto } from './dtos/user.dto';
-import { Transactional } from '@mikro-orm/core';
+import { MikroORM, Transactional } from '@mikro-orm/core';
 import { AuthService } from './auth.service';
 import { UserRepository } from './repositories/user.repositories';
 import { Response } from 'express';
@@ -10,6 +10,7 @@ import { User } from './entities/user.entity';
 @Injectable()
 export class UserApplication {
   constructor(
+    private orm: MikroORM,
     private userService: UserService,
     private authService: AuthService,
     private userRepository: UserRepository,

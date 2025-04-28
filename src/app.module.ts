@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import authConfig from './config/auth.config';
 import { ProblemModule } from './problem/problem.module';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ProblemModule } from './problem/problem.module';
     MikroOrmModule.forRoot(),
     UserModule,
     ProblemModule,
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [],

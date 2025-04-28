@@ -128,6 +128,7 @@ export class EditorialApplication {
       content: editorial.content,
       author: {
         username: editorial.author.username,
+        profilePictureUrl: editorial.author.profilePictureUrl,
       },
       upvoteCount: editorial.denormalizedInfo.upvoteCount,
       downvoteCount: editorial.denormalizedInfo.downvoteCount,

@@ -24,6 +24,9 @@ export class User extends TimestampedEntity {
   email: string;
 
   @Property()
+  profilePictureUrl?: string;
+
+  @Property()
   hashedPassword: string;
 
   @ManyToOne(() => Role)
