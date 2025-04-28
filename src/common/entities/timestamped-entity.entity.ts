@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { Entity, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import dayjs from 'dayjs';
 import { nanoid } from 'nanoid';
 import { v4 } from 'uuid';
@@ -12,14 +12,14 @@ export class TimestampedEntity {
     onCreate: () => dayjs().utc().toDate(),
     defaultRaw: 'now()',
   })
-  createdAt?: Date;
+  createdAt: Opt<Date>;
 
   @Property({
     onCreate: () => dayjs().utc().toDate(),
     onUpdate: () => dayjs().utc().toDate(),
     defaultRaw: 'now()',
   })
-  updatedAt?: Date;
+  updatedAt: Opt<Date>;
 }
 
 /**
