@@ -32,3 +32,9 @@ export class AddCommentDto {
   @IsOptional()
   parentCommentId?: string;
 }
+
+export class EditCommentDto {
+  @IsString()
+  @IsNotEmpty()
+  content: string;
+}

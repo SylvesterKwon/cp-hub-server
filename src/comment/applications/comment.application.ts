@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { MikroORM, Transactional } from '@mikro-orm/core';
-import { AddCommentDto } from '../dtos/comment.dto';
+import { AddCommentDto, EditCommentDto } from '../dtos/comment.dto';
 import { User } from 'src/user/entities/user.entity';
 import { CommentRepository } from '../repositories/comment.repository';
 import {
@@ -48,6 +48,18 @@ export class CommentApplication {
       depth,
     });
     return { message: 'Comment added successfully', commentId: comment.id };
+  }
+
+  @Transactional()
+  async editComment(user: User, commentId: string, dto: EditCommentDto) {
+    const comment = await this.commentRepository.findOne({
+      id: commentId,
+    });
+    if (!comment) throw new CommentNotFoundException();
+    if (comment.author.id !== user.id) throw new UnauthorizedException();
+
+    comment.content = dto.content;
+    return { message: 'Comment edited successfully', commentId: comment.id };
   }
 
   @Transactional()

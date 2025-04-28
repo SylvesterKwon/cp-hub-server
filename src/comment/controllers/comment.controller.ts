@@ -3,7 +3,7 @@ import { CommentApplication } from '../applications/comment.application';
 import { AuthenticationRequired } from 'src/common/decorators/auth.decorator';
 import { Requester } from 'src/common/decorators/requester.decorator';
 import { User } from 'src/user/entities/user.entity';
-import { AddCommentDto } from '../dtos/comment.dto';
+import { AddCommentDto, EditCommentDto } from '../dtos/comment.dto';
 
 @Controller('comment')
 export class CommentController {
@@ -17,10 +17,18 @@ export class CommentController {
     return await this.commentApplication.addComment(user, dto);
   }
 
-  // TODO: Edit comment
+  @AuthenticationRequired()
+  @Post(':commentId/edit')
+  async editComment(
+    @Requester() user: User,
+    @Param('commentId') commentId: string,
+    @Body() dto: EditCommentDto,
+  ) {
+    return await this.commentApplication.editComment(user, commentId, dto);
+  }
 
   @AuthenticationRequired()
-  @Post('delete/:commentId')
+  @Post(':commentId/delete')
   async deleteComment(
     @Requester() user: User,
     @Param('commentId') commentId: string,
