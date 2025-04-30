@@ -38,6 +38,12 @@ export class UserController {
     return await this.userApplication.signUp(dto);
   }
 
+  /** API for fetching basic information for current user */
+  @Get('me')
+  async getMe(@Requester() user?: User) {
+    return await this.userApplication.getMe(user);
+  }
+
   @Get(':username/profile')
   async getUserProfile(@Param('usernmae') username: string) {
     return await this.userApplication.getUserProfile(username);

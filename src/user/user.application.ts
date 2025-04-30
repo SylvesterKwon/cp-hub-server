@@ -37,13 +37,39 @@ export class UserApplication {
       accessToken: accessToken,
       userId: user.id,
       username: user.username,
-      profilePictureUrl: user.profilePictureUrl,
     };
   }
 
   @Transactional()
   async signUp(dto: SignUpDto) {
     await this.userService.signUp(dto);
+  }
+
+  async getMe(user: User | undefined) {
+    if (!user) return undefined;
+    user = await this.userRepository.populate(user, [
+      'role',
+      'role.permissions',
+    ]);
+    const role = user.role?.getEntity();
+    return {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      profilePictureUrl: user.profilePictureUrl,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      role: role
+        ? {
+            id: role.id,
+            name: role.name,
+            permissions: role.permissions.map((permission) => ({
+              id: permission.id,
+              name: permission.name,
+            })),
+          }
+        : undefined,
+    };
   }
 
   async getUserProfile(username: string) {
