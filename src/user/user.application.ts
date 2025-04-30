@@ -37,6 +37,7 @@ export class UserApplication {
       accessToken: accessToken,
       userId: user.id,
       username: user.username,
+      profilePictureUrl: user.profilePictureUrl,
     };
   }
 

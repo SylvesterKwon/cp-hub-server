@@ -1,4 +1,5 @@
 export type CommentResponse = {
+  id: string;
   isDeleted: boolean;
   content?: string;
   createdAt: Date;

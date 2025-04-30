@@ -5,12 +5,18 @@ import { MikroORM } from '@mikro-orm/core';
 import { Problem } from 'src/problem/entities/problem.entity';
 import { Editorial } from 'src/problem/entities/editorial.entity';
 import { Contest } from 'src/problem/entities/contest.entity';
+import { CommentRepository } from '../repositories/comment.repository';
+import { CommentResponse } from '../types/comment-response.dto';
+import { Comment } from '../entities/comment.entity';
 
 export const COMMENT_DEPTH_LIMIT = 10;
 
 @Injectable()
 export class CommentService {
-  constructor(private orm: MikroORM) {}
+  constructor(
+    private orm: MikroORM,
+    private commentRepository: CommentRepository,
+  ) {}
 
   private getContextRepository(contextType: CommentContextType) {
     switch (contextType) {
@@ -31,5 +37,35 @@ export class CommentService {
     return await this.getContextRepository(commentContext.type).findOne({
       id: commentContext.id,
     });
+  }
+
+  async getComments(dto: CommentContextDto) {
+    const comments = await this.commentRepository.find(
+      { context: dto },
+      { orderBy: { createdAt: 'desc' }, populate: ['author'] },
+    );
+    const ancestorComments = comments.filter((comment) => comment.depth === 0);
+
+    const convertToCommentResponse = (comment: Comment): CommentResponse => {
+      return {
+        id: comment.id,
+        isDeleted: comment.isDeleted,
+        content: comment.content,
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+        author: comment.isDeleted
+          ? undefined
+          : {
+              username: comment.author.username,
+              profilePictureUrl: comment.author.profilePictureUrl,
+            },
+        childComments: comments
+          .filter((item) => item.parentComment?.id === comment.id)
+          .map(convertToCommentResponse),
+      };
+    };
+
+    const results = ancestorComments.map(convertToCommentResponse);
+    return results;
   }
 }
