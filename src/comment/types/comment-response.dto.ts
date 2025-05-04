@@ -5,6 +5,7 @@ export type CommentResponse = {
   createdAt: Date;
   updatedAt: Date;
   author?: {
+    id: string;
     username: string;
     profilePictureUrl?: string;
   };

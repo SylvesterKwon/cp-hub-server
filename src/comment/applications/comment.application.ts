@@ -90,8 +90,7 @@ export class CommentApplication {
     if (!isAdmin && comment.author.id !== user.id)
       throw new UnauthorizedException();
 
-    comment.isDeleted = true;
-    comment.content = undefined;
+    await this.commentService.deleteComment(comment);
 
     return { message: 'Comment deleted successfully', commentId: comment.id };
   }
