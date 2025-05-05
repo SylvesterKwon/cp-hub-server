@@ -13,6 +13,7 @@ import { Problem } from './problem.entity';
 import { User } from 'src/user/entities/user.entity';
 import { EditorialRepository } from '../repositories/editorial.repository';
 import { EditorialVotes } from './editorial-votes.entity';
+import { CommentDenormalizedInfo } from 'src/comment/types/comment.type';
 
 const intialExponentialDecayScore = 100;
 
@@ -28,7 +29,7 @@ export type EditorialDenormalizedInfo = {
     valueUpdatedAt: Date | null;
     cachedValue: number;
   };
-};
+} & CommentDenormalizedInfo;
 
 @Index({
   expression: `
@@ -54,7 +55,7 @@ export class Editorial extends TimestampedEntity {
   @Property({
     type: JsonType,
   })
-  denormalizedInfo: EditorialDenormalizedInfo & Opt = {
+  denormalizedInfo: Opt<EditorialDenormalizedInfo> = {
     upvoteCount: 0,
     downvoteCount: 0,
     wilsonScoreInterval: {
@@ -66,5 +67,6 @@ export class Editorial extends TimestampedEntity {
       valueUpdatedAt: new Date(),
       cachedValue: intialExponentialDecayScore,
     },
+    commentCount: 0,
   };
 }

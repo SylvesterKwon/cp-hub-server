@@ -12,10 +12,13 @@ import { ProblemRepository } from '../repositories/problem.repository';
 import { Tag } from './tag.entity';
 import { Contest } from './contest.entity';
 import { Editorial } from './editorial.entity';
+import { CommentDenormalizedInfo } from 'src/comment/types/comment.type';
 
 export type ProblemAdditioinalInfo = {
   exponentialDecayScoreCachedValueUpdatedAt: Date | null;
 };
+
+export type ProblemDenormalizedInfo = CommentDenormalizedInfo;
 
 const defaultAdditionalInfo: ProblemAdditioinalInfo = {
   exponentialDecayScoreCachedValueUpdatedAt: null,
@@ -43,4 +46,11 @@ export class Problem extends TimestampedShortIdEntity {
     default: JSON.stringify(defaultAdditionalInfo),
   })
   additionalInfo: ProblemAdditioinalInfo & Opt;
+
+  @Property({
+    type: JsonType,
+  })
+  denormalizedInfo: Opt<ProblemDenormalizedInfo> = {
+    commentCount: 0,
+  };
 }

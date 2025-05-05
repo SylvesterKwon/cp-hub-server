@@ -1,13 +1,18 @@
 import { Injectable, NotImplementedException } from '@nestjs/common';
 import { CommentContextDto } from '../dtos/comment.dto';
-import { CommentContextType } from '../entities/comment.entity';
+import {
+  CommentContextId,
+  CommentContextType,
+} from '../entities/comment.entity';
 import { MikroORM } from '@mikro-orm/core';
 import { Problem } from 'src/problem/entities/problem.entity';
 import { Editorial } from 'src/problem/entities/editorial.entity';
 import { Contest } from 'src/problem/entities/contest.entity';
 import { CommentRepository } from '../repositories/comment.repository';
-import { CommentResponse } from '../types/comment-response.dto';
+import { CommentResponse } from '../types/comment-response.type';
 import { Comment } from '../entities/comment.entity';
+import { CommentDepthExceedsLimitException } from '../exceptions/comment.exception';
+import { User } from 'src/user/entities/user.entity';
 
 export const COMMENT_DEPTH_LIMIT = 10;
 
@@ -39,13 +44,13 @@ export class CommentService {
     });
   }
 
-  async getComments(dto: CommentContextDto) {
+  async getComments(contextId: CommentContextId) {
     const comments = await this.commentRepository.find(
-      { context: dto },
+      { contextId: contextId },
       { orderBy: { createdAt: 'desc' }, populate: ['author'] },
     );
     const totalCountExceptDeleted = await this.commentRepository.count({
-      context: dto,
+      contextId: contextId,
       isDeleted: false,
     });
     const ancestorComments = comments.filter((comment) => comment.depth === 0);
@@ -77,9 +82,33 @@ export class CommentService {
     };
   }
 
+  async addComment(
+    user: User,
+    contextId: CommentContextId,
+    content: string,
+    parentComment?: Comment,
+  ) {
+    const depth = parentComment ? parentComment.depth + 1 : 0;
+    if (depth > COMMENT_DEPTH_LIMIT)
+      throw new CommentDepthExceedsLimitException();
+
+    const comment = this.commentRepository.create({
+      author: user,
+      contextId,
+      content: content,
+      parentComment: parentComment,
+      depth,
+    });
+
+    await this.commentRepository.getEntityManager().flush();
+    await this.updateCommentCount(comment.contextId);
+
+    return comment;
+  }
+
   async deleteComment(comment: Comment) {
     const comments = await this.commentRepository.find({
-      context: comment.context,
+      contextId: comment.contextId,
     });
     function getChildrenComments(c: Comment): Comment[] {
       return comments.filter((item) => item.parentComment === c);
@@ -98,5 +127,20 @@ export class CommentService {
       }
       this.commentRepository.getEntityManager().remove(commentsToRemove);
     }
+    await this.commentRepository.getEntityManager().flush();
+    await this.updateCommentCount(comment.contextId);
+  }
+
+  async updateCommentCount(contextId: CommentContextId) {
+    const commentCount = await this.commentRepository.count({
+      contextId,
+      isDeleted: false,
+    });
+    const contextRepository = this.getContextRepository(contextId.type);
+    const contextEntity = await contextRepository.findOne({
+      id: contextId.id,
+    });
+    if (!contextEntity) throw new Error('Context not found');
+    contextEntity.denormalizedInfo.commentCount = commentCount;
   }
 }

@@ -3,14 +3,19 @@ import {
   Collection,
   Entity,
   Enum,
+  JsonType,
   ManyToMany,
   OneToMany,
+  Opt,
   Property,
 } from '@mikro-orm/core';
 import { TimestampedShortIdEntity } from 'src/common/entities/timestamped-entity.entity';
 import { ContestRepository } from '../repositories/contest.repository';
 import { Problem } from './problem.entity';
 import { ContestProblems } from './contest-problems.entity';
+import { CommentDenormalizedInfo } from 'src/comment/types/comment.type';
+
+export type ContestDenormalizedInfo = CommentDenormalizedInfo;
 
 @Entity({ repository: () => ContestRepository })
 export class Contest extends TimestampedShortIdEntity {
@@ -41,6 +46,13 @@ export class Contest extends TimestampedShortIdEntity {
   /** Problems with index */
   @OneToMany(() => ContestProblems, (contestProblem) => contestProblem.contest)
   contestProblems = new Collection<ContestProblems>(this);
+
+  @Property({
+    type: JsonType,
+  })
+  denormalizedInfo: Opt<ContestDenormalizedInfo> = {
+    commentCount: 0,
+  };
 }
 
 export enum ContestType {

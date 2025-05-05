@@ -9,14 +9,10 @@ import { User } from 'src/user/entities/user.entity';
 import { CommentRepository } from '../repositories/comment.repository';
 import {
   CommentContextNotFoundException,
-  CommentDepthExceedsLimitException,
   CommentNotFoundException,
   ParentCommentNotFoundException,
 } from '../exceptions/comment.exception';
-import {
-  COMMENT_DEPTH_LIMIT,
-  CommentService,
-} from '../services/comment.service';
+import { CommentService } from '../services/comment.service';
 import { AuthService } from 'src/user/auth.service';
 import { RoleType } from 'src/user/entities/role.entity';
 
@@ -50,19 +46,16 @@ export class CommentApplication {
       });
       if (!parentComment) throw new ParentCommentNotFoundException();
     }
-    const context = await this.commentService.getContext(dto.context);
-    if (!context) throw new CommentContextNotFoundException();
-    const depth = parentComment ? parentComment.depth + 1 : 0;
-    if (depth > COMMENT_DEPTH_LIMIT)
-      throw new CommentDepthExceedsLimitException();
 
-    const comment = this.commentRepository.create({
-      author: user,
-      context: dto.context,
-      content: dto.content,
-      parentComment: parentComment,
-      depth,
-    });
+    const comment = await this.commentService.addComment(
+      user,
+      {
+        type: dto.context.type,
+        id: dto.context.id,
+      },
+      dto.content,
+      parentComment,
+    );
     return { message: 'Comment added successfully', commentId: comment.id };
   }
 
