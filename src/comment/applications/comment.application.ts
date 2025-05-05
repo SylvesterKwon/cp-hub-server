@@ -9,18 +9,12 @@ import { User } from 'src/user/entities/user.entity';
 import { CommentRepository } from '../repositories/comment.repository';
 import {
   CommentContextNotFoundException,
-  CommentDepthExceedsLimitException,
   CommentNotFoundException,
   ParentCommentNotFoundException,
 } from '../exceptions/comment.exception';
-import {
-  COMMENT_DEPTH_LIMIT,
-  CommentService,
-} from '../services/comment.service';
+import { CommentService } from '../services/comment.service';
 import { AuthService } from 'src/user/auth.service';
 import { RoleType } from 'src/user/entities/role.entity';
-import { Comment } from '../entities/comment.entity';
-import { CommentResponse } from '../types/comment-response.dto';
 
 @Injectable()
 export class CommentApplication {
@@ -36,34 +30,10 @@ export class CommentApplication {
     const context = await this.commentService.getContext(dto);
     if (!context) throw new CommentContextNotFoundException();
 
-    const comments = await this.commentRepository.find(
-      { context: dto },
-      { orderBy: { createdAt: 'desc' }, populate: ['author'] },
-    );
-
-    const ancestorComments = comments.filter((comment) => comment.depth === 0);
-
-    const convertToCommentResponse = (comment: Comment): CommentResponse => {
-      return {
-        isDeleted: comment.isDeleted,
-        content: comment.content,
-        createdAt: comment.createdAt,
-        updatedAt: comment.updatedAt,
-        author: comment.isDeleted
-          ? undefined
-          : {
-              username: comment.author.username,
-              profilePictureUrl: comment.author.profilePictureUrl,
-            },
-        childComments: comments
-          .filter((item) => item.parentComment?.id === comment.id)
-          .map(convertToCommentResponse),
-      };
-    };
-
-    const results = ancestorComments.map(convertToCommentResponse);
+    const { results, totalCount } = await this.commentService.getComments(dto);
     return {
       results: results,
+      totalCount: totalCount,
     };
   }
 
@@ -76,19 +46,16 @@ export class CommentApplication {
       });
       if (!parentComment) throw new ParentCommentNotFoundException();
     }
-    const context = await this.commentService.getContext(dto.context);
-    if (!context) throw new CommentContextNotFoundException();
-    const depth = parentComment ? parentComment.depth + 1 : 0;
-    if (depth > COMMENT_DEPTH_LIMIT)
-      throw new CommentDepthExceedsLimitException();
 
-    const comment = this.commentRepository.create({
-      author: user,
-      context: dto.context,
-      content: dto.content,
-      parentComment: parentComment,
-      depth,
-    });
+    const comment = await this.commentService.addComment(
+      user,
+      {
+        type: dto.context.type,
+        id: dto.context.id,
+      },
+      dto.content,
+      parentComment,
+    );
     return { message: 'Comment added successfully', commentId: comment.id };
   }
 
@@ -117,8 +84,7 @@ export class CommentApplication {
     if (!isAdmin && comment.author.id !== user.id)
       throw new UnauthorizedException();
 
-    comment.isDeleted = true;
-    comment.content = undefined;
+    await this.commentService.deleteComment(comment);
 
     return { message: 'Comment deleted successfully', commentId: comment.id };
   }

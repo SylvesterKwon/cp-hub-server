@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { PermissionRepository } from './repositories/permission.repository';
+import { Role } from './entities/role.entity';
 
 @Injectable()
 export class AuthService {

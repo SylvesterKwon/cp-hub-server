@@ -18,18 +18,18 @@ export enum CommentContextType {
   CONTEST = 'contest',
 }
 
-export type CommentContext = {
+export type CommentContextId = {
   type: CommentContextType;
   id: string;
 };
 
-@Index({ properties: ['context.type', 'context.id'] })
+@Index({ properties: ['contextId.type', 'contextId.id'] })
 @Entity({ repository: () => CommentRepository })
 export class Comment extends TimestampedEntity {
   @Property({
     type: JsonType,
   })
-  context: CommentContext;
+  contextId: CommentContextId;
 
   @Property()
   isDeleted: Opt<boolean> = false;

@@ -130,6 +130,7 @@ export class EditorialApplication {
         username: editorial.author.username,
         profilePictureUrl: editorial.author.profilePictureUrl,
       },
+      commentCount: editorial.denormalizedInfo.commentCount,
       upvoteCount: editorial.denormalizedInfo.upvoteCount,
       downvoteCount: editorial.denormalizedInfo.downvoteCount,
     };
