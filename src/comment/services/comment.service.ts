@@ -74,24 +74,19 @@ export class CommentService {
     const comments = await this.commentRepository.find({
       context: comment.context,
     });
-    function getValidChildrenComments(c: Comment): Comment[] {
-      return comments.filter(
-        (item) => item.parentComment === c && !item.isDeleted,
-      );
+    function getChildrenComments(c: Comment): Comment[] {
+      return comments.filter((item) => item.parentComment === c);
     }
-    if (getValidChildrenComments(comment).length > 0) {
+    if (getChildrenComments(comment).length > 0) {
       // if the comment has child comments, mark it as deleted
       comment.isDeleted = true;
       comment.content = undefined;
     } else {
       const commentsToRemove: Comment[] = [];
-      while (getValidChildrenComments(comment).length === 0) {
+      while (getChildrenComments(comment).length <= 1) {
         commentsToRemove.push(comment);
-        comment.isDeleted = true; // to get right value when calling getValidChildrenComments()
-        comment.content = undefined;
         if (!comment.parentComment || comment.parentComment.isDeleted === false)
           break;
-        // console.log(comment.parentComment);
         comment = comment.parentComment;
       }
       this.commentRepository.getEntityManager().remove(commentsToRemove);
