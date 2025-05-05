@@ -44,6 +44,10 @@ export class CommentService {
       { context: dto },
       { orderBy: { createdAt: 'desc' }, populate: ['author'] },
     );
+    const totalCountExceptDeleted = await this.commentRepository.count({
+      context: dto,
+      isDeleted: false,
+    });
     const ancestorComments = comments.filter((comment) => comment.depth === 0);
 
     const convertToCommentResponse = (comment: Comment): CommentResponse => {
@@ -67,7 +71,10 @@ export class CommentService {
     };
 
     const results = ancestorComments.map(convertToCommentResponse);
-    return results;
+    return {
+      results,
+      totalCount: totalCountExceptDeleted,
+    };
   }
 
   async deleteComment(comment: Comment) {

@@ -34,9 +34,10 @@ export class CommentApplication {
     const context = await this.commentService.getContext(dto);
     if (!context) throw new CommentContextNotFoundException();
 
-    const results = await this.commentService.getComments(dto);
+    const { results, totalCount } = await this.commentService.getComments(dto);
     return {
       results: results,
+      totalCount: totalCount,
     };
   }
 
