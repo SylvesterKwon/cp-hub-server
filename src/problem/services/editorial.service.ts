@@ -36,6 +36,9 @@ export class EditorialService {
         author: user,
         content,
       });
+      // set initial wilson score interval
+      this.calculateWilsonScoreInterval(editorial);
+
       // invalidate EDS cache when new editorial posted
       problem.additionalInfo.exponentialDecayScoreCachedValueUpdatedAt = null;
       return editorial;
@@ -167,9 +170,38 @@ export class EditorialService {
     const latestScore = editorial.denormalizedInfo.exponentialDecayScore.value;
     const currentScore =
       latestScore * Math.exp(-this.coolingRate * timeDiffInHours);
-    // console.log(
-    //   `${editorial.id} recalculating score: ${editorial.denormalizedInfo.exponentialDecayScore.cachedValue} -> ${currentScore}`,
-    // );
     return currentScore;
+  }
+
+  async calculateWilsonScoreInterval(editorial: Editorial) {
+    const totalVoteCount =
+      editorial.denormalizedInfo.upvoteCount +
+      editorial.denormalizedInfo.downvoteCount;
+
+    editorial.denormalizedInfo.wilsonScoreInterval =
+      this.getWilsionScoreInterval(
+        editorial.denormalizedInfo.upvoteCount + 0.1, // give 0.1 upvote to avoid division by zero
+        totalVoteCount + 0.1,
+      );
+  }
+
+  /**
+   * Wilson score interval
+   * @param total total number of feedback
+   * @param positive number of positive feedback
+   * @param confidence confidence level (default: 0.95)
+   * @returns Wilson score interval
+   * @see https://www.evanmiller.org/how-not-to-sort-by-average-rating.html
+   */
+  private getWilsionScoreInterval(pos: number, n: number) {
+    const z = 1.96; // hardcoded value (1-α/2) quantile of the standard normal distribution of 95% confidence level
+    const phat = pos / n;
+    const a = phat + (z * z) / (2 * n);
+    const b = z * Math.sqrt((phat * (1 - phat) + (z * z) / (4 * n)) / n);
+    const c = 1 + (z * z) / n;
+    return {
+      lowerBound: (a - b) / c,
+      upperBound: (a + b) / c,
+    };
   }
 }

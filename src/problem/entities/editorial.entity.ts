@@ -61,7 +61,7 @@ export class Editorial extends TimestampedEntity {
     wilsonScoreInterval: {
       lowerBound: 0,
       upperBound: 0,
-    }, // TODO: calculate when vote is {0,0}
+    },
     exponentialDecayScore: {
       value: intialExponentialDecayScore,
       valueUpdatedAt: new Date(),

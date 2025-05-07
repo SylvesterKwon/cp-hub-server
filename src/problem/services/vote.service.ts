@@ -55,6 +55,8 @@ export class VoteService {
       this.editorialService.recalculateExponentialDecayScore(editorial, 100);
     } else if (action === EditorialVoteAction.DOWNVOTE)
       this.downvote(editorial, user);
+
+    await this.editorialService.calculateWilsonScoreInterval(editorial);
   }
 
   private undoVote(editorial: Editorial, existingVote: EditorialVotes) {
