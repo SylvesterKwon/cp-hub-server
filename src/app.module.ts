@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 import authConfig from './config/auth.config';
 import { ProblemModule } from './problem/problem.module';
 import { CommentModule } from './comment/comment.module';
+import { ReferenceModule } from './reference/reference.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { CommentModule } from './comment/comment.module';
     UserModule,
     ProblemModule,
     CommentModule,
+    ReferenceModule,
   ],
   controllers: [AppController],
   providers: [],
