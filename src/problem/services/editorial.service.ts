@@ -10,6 +10,12 @@ import { FilterQuery, OrderDefinition, raw } from '@mikro-orm/core';
 import { EditorialVotesRepository } from '../repositories/editorial-votes.repository';
 import { EditorialListSortBy } from '../types/editorial.type';
 import dayjs, { Dayjs } from 'dayjs';
+import { EventManagerService } from 'src/event-manager/event-manager.service';
+import {
+  EditorialAddedEvent,
+  EditorialDeletedEvent,
+  EditorialUpdatedEvent,
+} from '../events/editorial.event';
 
 @Injectable()
 export class EditorialService {
@@ -17,6 +23,7 @@ export class EditorialService {
     private editorialRepository: EditorialRepository,
     private authService: AuthService,
     private editorialVotesRepository: EditorialVotesRepository,
+    private eventManagerService: EventManagerService,
   ) {}
 
   halfLifeInHours = 24; // for exponential decay score
@@ -29,6 +36,9 @@ export class EditorialService {
     });
     if (existingEditorial) {
       existingEditorial.content = content;
+      this.eventManagerService.enqueueEvent(
+        new EditorialUpdatedEvent(existingEditorial),
+      );
       return existingEditorial;
     } else {
       const editorial = this.editorialRepository.create({
@@ -41,6 +51,8 @@ export class EditorialService {
 
       // invalidate EDS cache when new editorial posted
       problem.additionalInfo.exponentialDecayScoreCachedValueUpdatedAt = null;
+
+      this.eventManagerService.enqueueEvent(new EditorialAddedEvent(editorial));
       return editorial;
     }
   }
@@ -53,6 +65,8 @@ export class EditorialService {
     if (!isAdmin && editorial.author.id !== user.id)
       throw new UnauthorizedException();
     const em = this.editorialRepository.getEntityManager();
+
+    this.eventManagerService.enqueueEvent(new EditorialDeletedEvent(editorial));
     return await em.removeAndFlush(editorial);
   }
 
