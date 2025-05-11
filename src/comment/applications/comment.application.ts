@@ -66,8 +66,10 @@ export class CommentApplication {
     });
     if (!comment) throw new CommentNotFoundException();
     if (comment.author.id !== user.id) throw new UnauthorizedException();
+    if (comment.isDeleted) throw new CommentNotFoundException();
 
-    comment.content = dto.content;
+    this.commentService.editComment(comment, dto.content);
+
     return { message: 'Comment edited successfully', commentId: comment.id };
   }
 
