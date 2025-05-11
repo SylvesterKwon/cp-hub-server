@@ -10,6 +10,8 @@ import { ReferenceModule } from './reference/reference.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { EventManagerModule } from './event-manager/event-manager.module';
 import { ClsModule } from 'nestjs-cls';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { EmitEventInterceptor } from './common/events/emit-event.interceptor';
 
 @Module({
   imports: [
@@ -33,6 +35,11 @@ import { ClsModule } from 'nestjs-cls';
     ReferenceModule,
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: EmitEventInterceptor,
+    },
+  ],
 })
 export class AppModule {}

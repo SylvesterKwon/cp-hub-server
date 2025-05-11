@@ -6,14 +6,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-
-// TODO: move enum definition to entity file
-export enum ReferenceType {
-  PROBLEM = 'problem',
-  EDITORIAL = 'editorial',
-  CONTEST = 'contest',
-  USER = 'user',
-}
+import { ReferenceTargetType } from '../entities/reference.entity';
 
 export class GetReferenceInfoBulkDto {
   @IsArray()
@@ -28,6 +21,6 @@ export class ReferenceTypeDto {
   id: string;
 
   @IsString()
-  @IsEnum(ReferenceType)
-  type: ReferenceType;
+  @IsEnum(ReferenceTargetType)
+  type: ReferenceTargetType;
 }

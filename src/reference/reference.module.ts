@@ -7,11 +7,13 @@ import { Contest } from 'src/problem/entities/contest.entity';
 import { Editorial } from 'src/problem/entities/editorial.entity';
 import { ReferenceApplication } from './applications/reference.application';
 import { ReferenceService } from './services/reference.service';
+import { Reference } from './entities/reference.entity';
+import { Comment } from 'src/comment/entities/comment.entity';
 
 @Module({
   imports: [
     MikroOrmModule.forFeature({
-      entities: [User, Problem, Contest, Editorial],
+      entities: [Reference, User, Problem, Contest, Editorial, Comment],
     }),
   ],
   controllers: [ReferenceController],
