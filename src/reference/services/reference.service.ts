@@ -5,11 +5,15 @@ import { UserRepository } from 'src/user/repositories/user.repositories';
 import { EditorialRepository } from 'src/problem/repositories/editorial.repository';
 import { ReferenceTypeDto } from '../dtos/reference.dto';
 import {
+  Reference,
   ReferenceSourceType,
   ReferenceTargetType,
 } from '../entities/reference.entity';
 import { CommentRepository } from 'src/comment/repositories/comment.repository';
 import { ReferenceRepository } from '../repositories/reference.repository';
+import { EventManagerService } from 'src/event-manager/event-manager.service';
+import { User } from 'src/user/entities/user.entity';
+import { raw, sql } from '@mikro-orm/core';
 
 @Injectable()
 export class ReferenceService {
@@ -39,6 +43,7 @@ export class ReferenceService {
   ];
 
   constructor(
+    private eventManagerService: EventManagerService,
     private referenceRepository: ReferenceRepository,
     private userRepository: UserRepository,
     private editorialRepository: EditorialRepository,
@@ -126,7 +131,7 @@ export class ReferenceService {
         .find((t) => t.type === reference.targetType)!
         .ids.find((id) => id === reference.targetId);
     });
-    const toBeAdded = targets.map((target) => {
+    const toBeAddedTargets = targets.map((target) => {
       return {
         type: target.type,
         ids: target.ids.filter(
@@ -141,23 +146,51 @@ export class ReferenceService {
     });
 
     this.referenceRepository.getEntityManager().remove(toBeDeleted);
-    for (const target of toBeAdded) {
-      for (const id of target.ids) {
+    const toBeAdded = toBeAddedTargets.flatMap((target) =>
+      target.ids.map((id) =>
         this.referenceRepository.create({
           sourceType: sourceType,
           sourceId: sourceId,
           targetType: target.type,
           targetId: id,
-        });
-      }
-    }
+        }),
+      ),
+    );
+    const addedEditorialReferences = toBeAdded.filter(
+      (item) => item.targetType === ReferenceTargetType.EDITORIAL,
+    );
+    const addedReferencedEditorialIds = addedEditorialReferences.map(
+      (item) => item.targetId,
+    );
+    const addedReferencedEditorial = await this.editorialRepository.find({
+      id: {
+        $in: addedReferencedEditorialIds,
+      },
+    });
+    addedEditorialReferences.forEach((item) => {
+      item.denormalizedInfo = {
+        targetAuthorId: addedReferencedEditorial.find(
+          (editorial) => editorial.id === item.targetId,
+        )!.author.id,
+      };
+    });
 
-    if (process.env.ENVIRONMENT === 'local') {
-      console.log('Reference Added:', toBeAdded);
-      console.log('Reference Deleted:', toBeDeleted);
-    }
-
-    // TODO: h-index calculation list up and emit event
+    let citationMetricsUpdateTagetUserIds = addedEditorialReferences.map(
+      (item) => item.denormalizedInfo!.targetAuthorId!,
+    );
+    citationMetricsUpdateTagetUserIds =
+      citationMetricsUpdateTagetUserIds.concat(
+        toBeDeleted
+          .filter((item) => item.targetType === ReferenceTargetType.EDITORIAL)
+          .map((item) => item.denormalizedInfo!.targetAuthorId!),
+      );
+    const hIndexUpdateTargetUsers = await this.userRepository.find({
+      id: {
+        $in: citationMetricsUpdateTagetUserIds,
+      },
+    });
+    await this.referenceRepository.getEntityManager().flush();
+    await this.updateCitationMetrics(hIndexUpdateTargetUsers);
   }
 
   async deleteReference(sourceType: ReferenceSourceType, sourceId: string) {
@@ -231,5 +264,59 @@ export class ReferenceService {
         profilePictureUrl: user.profilePictureUrl,
       })),
     };
+  }
+
+  async updateCitationMetrics(users: User[]) {
+    // const references = await this.referenceRepository.find({
+    //   targetType: ReferenceTargetType.EDITORIAL,
+    //   denormalizedInfo: {
+    //     targetAuthorId: {
+    //       $in: users.map((user) => user.id),
+    //     },
+    //   },
+    // });
+    console.log('updateing h-index for users', users);
+    const qb = this.referenceRepository
+      .getEntityManager()
+      .createQueryBuilder(Reference);
+    for (const user of users) {
+      const res = await qb
+        .select(['target_id', sql`count(id) as count`])
+        .where({
+          targetType: ReferenceTargetType.EDITORIAL,
+          denormalizedInfo: {
+            targetAuthorId: user.id,
+          },
+        })
+        .groupBy('target_id')
+        .orderBy({
+          [raw(`count`)]: 'desc',
+        })
+        .execute<{ targetId: string; count: string }[]>();
+      const xx = res.map((item) => ({
+        targetId: item.targetId,
+        count: parseInt(item.count),
+      }));
+      let hIndex = 0,
+        gIndex = 0;
+      let sum = 0;
+      for (let i = 0; i < xx.length; i++) {
+        if (xx[i].count >= i + 1) {
+          hIndex = i + 1;
+        } else {
+          break;
+        }
+      }
+      for (let i = 0; i < xx.length; i++) {
+        sum += xx[i].count;
+        if (sum >= (i + 1) * (i + 1)) {
+          gIndex = i + 1;
+        } else {
+          break;
+        }
+      }
+      user.denormalizedInfo.hIndex = hIndex;
+      user.denormalizedInfo.gIndex = gIndex;
+    }
   }
 }

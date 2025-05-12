@@ -1,6 +1,10 @@
-import { Entity, Enum, Index, Property } from '@mikro-orm/core';
+import { Entity, Enum, Index, JsonType, Opt, Property } from '@mikro-orm/core';
 import { ReferenceRepository } from '../repositories/reference.repository';
 import { TimestampedEntity } from 'src/common/entities/timestamped-entity.entity';
+
+export type ReferenceDenormalizedInfo = {
+  targetAuthorId?: string; // must exists if targetType is editorial
+};
 
 @Entity({ repository: () => ReferenceRepository })
 export class Reference extends TimestampedEntity {
@@ -17,6 +21,11 @@ export class Reference extends TimestampedEntity {
   @Property()
   @Index()
   targetId: string;
+
+  @Property({
+    type: JsonType,
+  })
+  denormalizedInfo: Opt<ReferenceDenormalizedInfo> = {};
 }
 
 export enum ReferenceSourceType {
