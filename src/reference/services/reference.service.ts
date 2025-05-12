@@ -13,10 +13,16 @@ import { ReferenceRepository } from '../repositories/reference.repository';
 
 @Injectable()
 export class ReferenceService {
-  referenceExtractRules: { type: ReferenceTargetType; regex: RegExp }[] = [
+  referenceExtractRules: {
+    type: ReferenceTargetType;
+    regex: RegExp;
+    idField?: string;
+    matchIndex?: number;
+  }[] = [
     {
       type: ReferenceTargetType.USER,
       regex: /(?<=^|\s)@([A-Za-z0-9_]+)/g,
+      idField: 'username',
     },
     {
       type: ReferenceTargetType.PROBLEM,
@@ -82,14 +88,15 @@ export class ReferenceService {
           // extract ids from content
           const ids: string[] = [];
           let match;
-          while ((match = rule.regex.exec(content)) !== null)
-            ids.push(match[1]); // TODO: match index should be configurable
+          while ((match = rule.regex.exec(content)) !== null) {
+            ids.push(match[rule.matchIndex ?? 1]);
+          }
 
           // filter non-existing ids & remove duplicates
           const existingTargets = await this.getReferenceTargetRepository(
             rule.type,
           ).find({
-            id: {
+            [rule.idField ?? 'id']: {
               $in: ids,
             },
           });
@@ -108,9 +115,6 @@ export class ReferenceService {
     sourceId: string,
     content: string,
   ) {
-    const source = await this.getReferenceSource(sourceType, sourceId);
-    if (!source) throw new Error('Source not found');
-
     const existingReferences = await this.referenceRepository.find({
       sourceId: sourceId,
       sourceType: sourceType,
@@ -148,14 +152,10 @@ export class ReferenceService {
       }
     }
 
-    console.log(
-      'Reference Added:',
-      toBeAdded.map((t) => `${t.type} - ${t.ids.join(', ')}`),
-    );
-    console.log(
-      'Reference Deleted:',
-      toBeDeleted.map((t) => `${t.targetType} - ${t.targetId}`),
-    );
+    if (process.env.ENVIRONMENT === 'local') {
+      console.log('Reference Added:', toBeAdded);
+      console.log('Reference Deleted:', toBeDeleted);
+    }
 
     // TODO: h-index calculation list up and emit event
   }

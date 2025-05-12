@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { MikroORM } from '@mikro-orm/core';
+import { MikroORM, Transactional } from '@mikro-orm/core';
 import { ReferenceTypeDto } from '../dtos/reference.dto';
 import { ReferenceService } from '../services/reference.service';
 import { ReferenceSourceType } from '../entities/reference.entity';
@@ -15,17 +15,26 @@ export class ReferenceApplication {
     return await this.referenceService.getReferenceInfoBulk(ids);
   }
 
-  // WIP - referecnce source modified 이벤트 발생시에 수행되도록 로직 수정
-  // https://docs.nestjs.com/techniques/events 참조하기
-  async updateReference(
-    sourceType: ReferenceSourceType,
-    sourceId: string,
-    content: string,
-  ) {
+  @Transactional()
+  async updateReference(sourceType: ReferenceSourceType, sourceId: string) {
+    const referenceSource = await this.referenceService.getReferenceSource(
+      sourceType,
+      sourceId,
+    );
+    if (!referenceSource) throw new Error('Reference source not found');
     return await this.referenceService.updateReference(
       sourceType,
       sourceId,
-      content,
+      referenceSource.content ?? '',
+    );
+  }
+
+  @Transactional()
+  async deleteReference(sourceType: ReferenceSourceType, sourceId: string) {
+    return await this.referenceService.updateReference(
+      sourceType,
+      sourceId,
+      '',
     );
   }
 }

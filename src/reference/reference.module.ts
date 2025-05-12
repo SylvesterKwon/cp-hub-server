@@ -9,6 +9,7 @@ import { ReferenceApplication } from './applications/reference.application';
 import { ReferenceService } from './services/reference.service';
 import { Reference } from './entities/reference.entity';
 import { Comment } from 'src/comment/entities/comment.entity';
+import { ReferenceEventListener } from './reference.event-listener';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { Comment } from 'src/comment/entities/comment.entity';
       entities: [Reference, User, Problem, Contest, Editorial, Comment],
     }),
   ],
-  controllers: [ReferenceController],
+  controllers: [ReferenceController, ReferenceEventListener],
   providers: [ReferenceApplication, ReferenceService],
 })
 export class ReferenceModule {}

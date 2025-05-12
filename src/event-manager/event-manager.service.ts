@@ -28,11 +28,9 @@ export class EventManagerService {
   emitAllEvents() {
     const queuedEvents = this.clsService.get('queuedEvents');
     if (!queuedEvents) return;
-    queuedEvents.map((event) => {
-      this.eventEmitter.emit(event.eventPattern, event);
-    });
-
     if (process.env.ENVIRONMENT === 'local')
-      console.log('Event emitted: ', queuedEvents);
+      console.log('Event emitting: ', queuedEvents);
+    for (const event of queuedEvents)
+      this.eventEmitter.emit(event.eventPattern, event);
   }
 }
