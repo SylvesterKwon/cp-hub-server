@@ -1,9 +1,11 @@
 import {
   Collection,
   Entity,
+  JsonType,
   ManyToMany,
   ManyToOne,
   OneToMany,
+  Opt,
   Property,
   Ref,
   Unique,
@@ -12,6 +14,11 @@ import { UserRepository } from '../repositories/user.repositories';
 import { TimestampedEntity } from 'src/common/entities/timestamped-entity.entity';
 import { Editorial } from 'src/problem/entities/editorial.entity';
 import { Role } from './role.entity';
+
+export type UserDenormalizedInfo = {
+  hIndex: number;
+  gIndex: number;
+};
 
 @Entity({ repository: () => UserRepository })
 export class User extends TimestampedEntity {
@@ -37,4 +44,12 @@ export class User extends TimestampedEntity {
 
   @ManyToMany(() => Editorial, (editorial) => editorial.votedBy)
   votedEditorials = new Collection<Editorial>(this);
+
+  @Property({
+    type: JsonType,
+  })
+  denormalizedInfo: Opt<UserDenormalizedInfo> = {
+    hIndex: 0,
+    gIndex: 0,
+  };
 }

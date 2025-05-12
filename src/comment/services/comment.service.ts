@@ -13,6 +13,12 @@ import { CommentResponse } from '../types/comment-response.type';
 import { Comment } from '../entities/comment.entity';
 import { CommentDepthExceedsLimitException } from '../exceptions/comment.exception';
 import { User } from 'src/user/entities/user.entity';
+import { EventManagerService } from 'src/event-manager/event-manager.service';
+import {
+  CommentAddedEvent,
+  CommentDeletedEvent,
+  CommentUpdatedEvent,
+} from '../events/comment.event';
 
 export const COMMENT_DEPTH_LIMIT = 10;
 
@@ -21,6 +27,7 @@ export class CommentService {
   constructor(
     private orm: MikroORM,
     private commentRepository: CommentRepository,
+    private eventManagerService: EventManagerService,
   ) {}
 
   private getContextRepository(contextType: CommentContextType) {
@@ -102,8 +109,13 @@ export class CommentService {
 
     await this.commentRepository.getEntityManager().flush();
     await this.updateCommentCount(comment.contextId);
-
+    this.eventManagerService.enqueueEvent(new CommentAddedEvent(comment));
     return comment;
+  }
+
+  async editComment(comment: Comment, content: string) {
+    comment.content = content;
+    this.eventManagerService.enqueueEvent(new CommentUpdatedEvent(comment));
   }
 
   async deleteComment(comment: Comment) {
@@ -129,6 +141,7 @@ export class CommentService {
     }
     await this.commentRepository.getEntityManager().flush();
     await this.updateCommentCount(comment.contextId);
+    this.eventManagerService.enqueueEvent(new CommentDeletedEvent(comment));
   }
 
   async updateCommentCount(contextId: CommentContextId) {
