@@ -8,7 +8,10 @@ import {
   Opt,
   Property,
 } from '@mikro-orm/core';
-import { TimestampedEntity } from 'src/common/entities/timestamped-entity.entity';
+import {
+  TimestampedEntity,
+  TimestampedShortIdEntity,
+} from 'src/common/entities/timestamped-entity.entity';
 import { Problem } from './problem.entity';
 import { User } from 'src/user/entities/user.entity';
 import { EditorialRepository } from '../repositories/editorial.repository';
@@ -39,7 +42,7 @@ export type EditorialDenormalizedInfo = {
   // CREATE INDEX denormalized_info_exponential_decay_score_cached_value_float ON editorial (((denormalized_info->'exponentialDecayScore'->'cachedValue')::float));
 })
 @Entity({ repository: () => EditorialRepository })
-export class Editorial extends TimestampedEntity {
+export class Editorial extends TimestampedShortIdEntity {
   @ManyToOne()
   problem: Problem;
 

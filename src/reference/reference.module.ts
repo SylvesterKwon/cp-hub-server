@@ -19,5 +19,6 @@ import { ReferenceEventListener } from './reference.event-listener';
   ],
   controllers: [ReferenceController, ReferenceEventListener],
   providers: [ReferenceApplication, ReferenceService],
+  exports: [ReferenceService],
 })
 export class ReferenceModule {}

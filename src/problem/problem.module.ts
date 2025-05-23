@@ -26,6 +26,8 @@ import { User } from 'src/user/entities/user.entity';
 import { EditorialVotes } from './entities/editorial-votes.entity';
 import { VoteService } from './services/vote.service';
 import { EditorialController } from './controllers/editorial.controller';
+import { ReferenceModule } from 'src/reference/reference.module';
+import { Comment } from 'src/comment/entities/comment.entity';
 
 @Module({
   imports: [
@@ -39,9 +41,11 @@ import { EditorialController } from './controllers/editorial.controller';
         Editorial,
         User,
         EditorialVotes,
+        Comment,
       ],
     }),
     UserModule,
+    ReferenceModule,
   ],
   providers: [
     // Applications
