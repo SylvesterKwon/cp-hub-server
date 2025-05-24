@@ -19,6 +19,10 @@ import {
   CommentDeletedEvent,
   CommentUpdatedEvent,
 } from '../events/comment.event';
+import { ProblemRepository } from 'src/problem/repositories/problem.repository';
+import { ContestRepository } from 'src/problem/repositories/contest.repository';
+import { EditorialRepository } from 'src/problem/repositories/editorial.repository';
+import { PopulatedComment } from '../types/comment.type';
 
 export const COMMENT_DEPTH_LIMIT = 10;
 
@@ -28,6 +32,9 @@ export class CommentService {
     private orm: MikroORM,
     private commentRepository: CommentRepository,
     private eventManagerService: EventManagerService,
+    private problemRepository: ProblemRepository,
+    private contestRepository: ContestRepository,
+    private editorialRepository: EditorialRepository,
   ) {}
 
   private getContextRepository(contextType: CommentContextType) {
@@ -155,5 +162,86 @@ export class CommentService {
     });
     if (!contextEntity) throw new Error('Context not found');
     contextEntity.denormalizedInfo.commentCount = commentCount;
+  }
+
+  async populateCommentContext<T extends Comment = Comment>(
+    comments: T[],
+  ): Promise<PopulatedComment<T>[]> {
+    const problems = await this.problemRepository.find({
+      id: {
+        $in: comments
+          .filter(
+            (comment) => comment.contextId.type === CommentContextType.PROBLEM,
+          )
+          .map((comment) => comment.contextId.id),
+      },
+    });
+    const editorials = await this.editorialRepository.find(
+      {
+        id: {
+          $in: comments
+            .filter(
+              (comment) =>
+                comment.contextId.type === CommentContextType.EDITORIAL,
+            )
+            .map((comment) => comment.contextId.id),
+        },
+      },
+      { populate: ['problem', 'author'] },
+    );
+    const contests = await this.contestRepository.find({
+      id: {
+        $in: comments
+          .filter(
+            (comment) => comment.contextId.type === CommentContextType.CONTEST,
+          )
+          .map((comment) => comment.contextId.id),
+      },
+    });
+    return comments.map((comment) => {
+      const res: PopulatedComment<T> = {
+        ...comment,
+      };
+      if (res.contextId.type === CommentContextType.PROBLEM) {
+        const problem = problems.find(
+          (problem) => problem.id === comment.contextId.id,
+        );
+        if (problem)
+          res.context = {
+            type: CommentContextType.PROBLEM,
+            id: problem.id,
+            name: problem.name,
+          };
+      } else if (res.contextId.type === CommentContextType.EDITORIAL) {
+        const editorial = editorials.find(
+          (editorial) => editorial.id === comment.contextId.id,
+        );
+        if (editorial)
+          res.context = {
+            type: CommentContextType.EDITORIAL,
+            id: editorial.id,
+            author: {
+              id: editorial.author.id,
+              username: editorial.author.username,
+              profilePictureUrl: editorial.author.profilePictureUrl,
+            },
+            problem: {
+              id: editorial.problem.id,
+              name: editorial.problem.name,
+            },
+          };
+      } else if (res.contextId.type === CommentContextType.CONTEST) {
+        const contest = contests.find(
+          (contest) => contest.id === comment.contextId.id,
+        );
+        if (contest)
+          res.context = {
+            type: CommentContextType.CONTEST,
+            id: contest.id,
+            name: contest.name,
+          };
+      }
+      return res;
+    });
   }
 }

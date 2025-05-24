@@ -28,6 +28,7 @@ import { VoteService } from './services/vote.service';
 import { EditorialController } from './controllers/editorial.controller';
 import { ReferenceModule } from 'src/reference/reference.module';
 import { Comment } from 'src/comment/entities/comment.entity';
+import { CommentModule } from 'src/comment/comment.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { Comment } from 'src/comment/entities/comment.entity';
     }),
     UserModule,
     ReferenceModule,
+    CommentModule,
   ],
   providers: [
     // Applications

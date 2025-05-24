@@ -23,7 +23,7 @@ export class EditorialController {
     );
   }
 
-  @Get(':editorialId/get-citations')
+  @Get(':editorialId/citations')
   async getCitations(@Param('editorialId') editorialId: string) {
     return await this.editorialApplication.getCitations(editorialId);
   }

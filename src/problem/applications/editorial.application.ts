@@ -18,6 +18,7 @@ import {
 import { ReferenceService } from 'src/reference/services/reference.service';
 import { ReferenceSourceType } from 'src/reference/entities/reference.entity';
 import { CommentRepository } from 'src/comment/repositories/comment.repository';
+import { CommentService } from 'src/comment/services/comment.service';
 
 @Injectable()
 export class EditorialApplication {
@@ -30,6 +31,7 @@ export class EditorialApplication {
     private voteService: VoteService,
     private referenceService: ReferenceService,
     private commentRepository: CommentRepository,
+    private commentService: CommentService,
   ) {}
 
   // TODO: updateMyEditorial, deleteMyEditorial 을 대응되는 controller 메서드명으로 수정하고 공통 로직을 service 레이어에 추상화
@@ -174,55 +176,84 @@ export class EditorialApplication {
     if (!editorial) throw new EditorialNotFoundException();
     const citations = await this.referenceService.getCitations(editorial);
 
-    const sourceComments = await this.commentRepository.find({
-      id: {
-        $in: citations
-          .filter(
-            (citation) => citation.sourceType === ReferenceSourceType.COMMENT,
-          )
-          .map((citation) => citation.sourceId),
+    const sourceComments = await this.commentRepository.find(
+      {
+        id: {
+          $in: citations
+            .filter(
+              (citation) => citation.sourceType === ReferenceSourceType.COMMENT,
+            )
+            .map((citation) => citation.sourceId),
+        },
       },
-    });
-    const sourceEditorials = await this.editorialRepository.find({
-      id: {
-        $in: citations
-          .filter(
-            (citation) => citation.sourceType === ReferenceSourceType.EDITORIAL,
-          )
-          .map((citation) => citation.sourceId),
+      {
+        populate: ['author'],
       },
-    });
-    const sourceAuthors = await this.userRepository.find({
-      id: {
-        $in: citations.map(
-          (citation) => citation.denormalizedInfo.sourceAuthorId,
-        ),
+    );
+    const poppulatedSourceComments =
+      await this.commentService.populateCommentContext(sourceComments);
+    const sourceEditorials = await this.editorialRepository.find(
+      {
+        id: {
+          $in: citations
+            .filter(
+              (citation) =>
+                citation.sourceType === ReferenceSourceType.EDITORIAL,
+            )
+            .map((citation) => citation.sourceId),
+        },
       },
-    });
+      {
+        populate: ['problem', 'author'],
+      },
+    );
 
-    return citations.map((citation) => {
-      const res: CitationInformation = {
-        sourceType: citation.sourceType,
-        sourceId: citation.sourceId,
-        sourceAuthorUsername: sourceAuthors.find(
-          (user) => user.id === citation.denormalizedInfo.sourceAuthorId,
-        )?.username,
-        createdAt: citation.createdAt,
-        updatedAt: citation.updatedAt,
-      };
-      if (citation.sourceType === ReferenceSourceType.COMMENT) {
-        const sourceComment = sourceComments.find(
-          (comment) => comment.id === citation.sourceId,
-        );
-        if (sourceComment) res.sourceCommentContextId = sourceComment.contextId;
-      } else if (citation.sourceType === ReferenceSourceType.EDITORIAL) {
-        const sourceEditorial = sourceEditorials.find(
-          (editorial) => editorial.id === citation.sourceId,
-        );
-        if (sourceEditorial)
-          res.sourceEditorialProblemId = sourceEditorial.problem.id;
-      }
-      return res;
-    });
+    const citationInformations = citations.map(
+      (citation): CitationInformation => {
+        const res: CitationInformation = {
+          sourceType: citation.sourceType,
+          createdAt: citation.createdAt,
+        };
+        if (citation.sourceType === ReferenceSourceType.COMMENT) {
+          const sourceComment = poppulatedSourceComments.find(
+            (comment) => comment.id === citation.sourceId,
+          );
+          // console.log('sourceComment', sourceComment);
+          if (sourceComment)
+            res.source = {
+              id: sourceComment.id,
+              author: {
+                id: sourceComment.author.id,
+                username: sourceComment.author.username,
+                profilePictureUrl: sourceComment.author.profilePictureUrl,
+              },
+              context: sourceComment.context,
+            };
+        } else if (citation.sourceType === ReferenceSourceType.EDITORIAL) {
+          const sourceEditorial = sourceEditorials.find(
+            (editorial) => editorial.id === citation.sourceId,
+          );
+          if (sourceEditorial)
+            res.source = {
+              id: sourceEditorial?.id,
+              author: {
+                id: sourceEditorial.author.id,
+                username: sourceEditorial.author.username,
+                profilePictureUrl: sourceEditorial.author.profilePictureUrl,
+              },
+              problem: {
+                id: sourceEditorial.problem.id,
+                name: sourceEditorial.problem.name,
+              },
+            };
+        }
+
+        return res;
+      },
+    );
+    return {
+      totalCount: citationInformations.length,
+      results: citationInformations,
+    };
   }
 }
