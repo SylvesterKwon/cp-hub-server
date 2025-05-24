@@ -31,10 +31,6 @@ export class ReferenceApplication {
 
   @Transactional()
   async deleteReference(sourceType: ReferenceSourceType, sourceId: string) {
-    return await this.referenceService.updateReference(
-      sourceType,
-      sourceId,
-      '',
-    );
+    return await this.referenceService.deleteReference(sourceType, sourceId);
   }
 }

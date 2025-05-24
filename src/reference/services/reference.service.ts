@@ -32,15 +32,15 @@ export class ReferenceService {
     },
     {
       type: ReferenceTargetType.PROBLEM,
-      regex: /(?<=^|\s)p#([A-Za-z0-9_]+)/g,
+      regex: /(?<=^|\s)p#([A-Za-z0-9_-]+)/g,
     },
     {
       type: ReferenceTargetType.CONTEST,
-      regex: /(?<=^|\s)c#([A-Za-z0-9_]+)/g,
+      regex: /(?<=^|\s)c#([A-Za-z0-9_-]+)/g,
     },
     {
       type: ReferenceTargetType.EDITORIAL,
-      regex: /(?<=^|\s)e#([A-Za-z0-9_]+)/g,
+      regex: /(?<=^|\s)e#([A-Za-z0-9_-]+)/g,
     },
   ];
 
@@ -131,7 +131,6 @@ export class ReferenceService {
       sourceType: sourceType,
     });
     const targets = await this.extractTargetsFromContent(content);
-
     const toBeDeleted = existingReferences.filter((reference) => {
       return !targets
         .find((t) => t.type === reference.targetType)!
@@ -201,9 +200,6 @@ export class ReferenceService {
   }
 
   async deleteReference(sourceType: ReferenceSourceType, sourceId: string) {
-    const source = await this.getReferenceSource(sourceType, sourceId);
-    if (!source) throw new ReferenceSourceNotFoundException();
-
     const references = await this.referenceRepository.find({
       sourceId: sourceId,
       sourceType: sourceType,
