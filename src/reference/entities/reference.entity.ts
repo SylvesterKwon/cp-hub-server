@@ -3,6 +3,7 @@ import { ReferenceRepository } from '../repositories/reference.repository';
 import { TimestampedEntity } from 'src/common/entities/timestamped-entity.entity';
 
 export type ReferenceDenormalizedInfo = {
+  sourceAuthorId: string;
   targetAuthorId?: string; // must exists if targetType is editorial
 };
 
@@ -25,9 +26,10 @@ export class Reference extends TimestampedEntity {
   @Property({
     type: JsonType,
   })
-  denormalizedInfo: Opt<ReferenceDenormalizedInfo> = {};
+  denormalizedInfo: Opt<ReferenceDenormalizedInfo>;
 }
 
+// NOTE: all reference source entity must have "author" property
 export enum ReferenceSourceType {
   COMMENT = 'comment',
   EDITORIAL = 'editorial',

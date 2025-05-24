@@ -14,6 +14,8 @@ import { ReferenceRepository } from '../repositories/reference.repository';
 import { EventManagerService } from 'src/event-manager/event-manager.service';
 import { User } from 'src/user/entities/user.entity';
 import { raw, sql } from '@mikro-orm/core';
+import { ReferenceSourceNotFoundException } from 'src/common/exceptions/reference.exception';
+import { Editorial } from 'src/problem/entities/editorial.entity';
 
 @Injectable()
 export class ReferenceService {
@@ -120,6 +122,10 @@ export class ReferenceService {
     sourceId: string,
     content: string,
   ) {
+    const source = await this.getReferenceSourceRepository(sourceType).findOne({
+      id: sourceId,
+    });
+    if (!source) throw new ReferenceSourceNotFoundException();
     const existingReferences = await this.referenceRepository.find({
       sourceId: sourceId,
       sourceType: sourceType,
@@ -169,6 +175,7 @@ export class ReferenceService {
     });
     addedEditorialReferences.forEach((item) => {
       item.denormalizedInfo = {
+        sourceAuthorId: source.author.id,
         targetAuthorId: addedReferencedEditorial.find(
           (editorial) => editorial.id === item.targetId,
         )!.author.id,
@@ -195,7 +202,7 @@ export class ReferenceService {
 
   async deleteReference(sourceType: ReferenceSourceType, sourceId: string) {
     const source = await this.getReferenceSource(sourceType, sourceId);
-    if (!source) throw new Error('Source not found');
+    if (!source) throw new ReferenceSourceNotFoundException();
 
     const references = await this.referenceRepository.find({
       sourceId: sourceId,
@@ -267,15 +274,6 @@ export class ReferenceService {
   }
 
   async updateCitationMetrics(users: User[]) {
-    // const references = await this.referenceRepository.find({
-    //   targetType: ReferenceTargetType.EDITORIAL,
-    //   denormalizedInfo: {
-    //     targetAuthorId: {
-    //       $in: users.map((user) => user.id),
-    //     },
-    //   },
-    // });
-    console.log('updateing h-index for users', users);
     const qb = this.referenceRepository
       .getEntityManager()
       .createQueryBuilder(Reference);
@@ -318,5 +316,19 @@ export class ReferenceService {
       user.denormalizedInfo.hIndex = hIndex;
       user.denormalizedInfo.gIndex = gIndex;
     }
+  }
+
+  async getCitations(editorial: Editorial) {
+    return await this.referenceRepository.find(
+      {
+        targetType: ReferenceTargetType.EDITORIAL,
+        targetId: editorial.id,
+      },
+      {
+        orderBy: {
+          createdAt: 'desc',
+        },
+      },
+    );
   }
 }

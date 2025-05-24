@@ -1,4 +1,4 @@
-import { Controller, Post, Param, Body } from '@nestjs/common';
+import { Controller, Post, Param, Body, Get } from '@nestjs/common';
 import { AuthenticationRequired } from 'src/common/decorators/auth.decorator';
 import { Requester } from 'src/common/decorators/requester.decorator';
 import { User } from 'src/user/entities/user.entity';
@@ -21,5 +21,10 @@ export class EditorialController {
       user,
       dto.action,
     );
+  }
+
+  @Get(':editorialId/citations')
+  async getCitations(@Param('editorialId') editorialId: string) {
+    return await this.editorialApplication.getCitations(editorialId);
   }
 }

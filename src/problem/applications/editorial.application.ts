@@ -11,7 +11,14 @@ import { EditorialService } from '../services/editorial.service';
 import { User } from 'src/user/entities/user.entity';
 import { Editorial } from '../entities/editorial.entity';
 import { EditorialVoteAction, VoteService } from '../services/vote.service';
-import { EditorialListSortBy } from '../types/editorial.type';
+import {
+  CitationInformation,
+  EditorialListSortBy,
+} from '../types/editorial.type';
+import { ReferenceService } from 'src/reference/services/reference.service';
+import { ReferenceSourceType } from 'src/reference/entities/reference.entity';
+import { CommentRepository } from 'src/comment/repositories/comment.repository';
+import { CommentService } from 'src/comment/services/comment.service';
 
 @Injectable()
 export class EditorialApplication {
@@ -22,6 +29,9 @@ export class EditorialApplication {
     private problemRepository: ProblemRepository,
     private userRepository: UserRepository,
     private voteService: VoteService,
+    private referenceService: ReferenceService,
+    private commentRepository: CommentRepository,
+    private commentService: CommentService,
   ) {}
 
   // TODO: updateMyEditorial, deleteMyEditorial 을 대응되는 controller 메서드명으로 수정하고 공통 로직을 service 레이어에 추상화
@@ -156,6 +166,94 @@ export class EditorialApplication {
         downvoteCount: editorial.denormalizedInfo.downvoteCount,
         myVote: { upvote: 'upvote', downvote: 'downvote', undo: null }[action],
       },
+    };
+  }
+
+  async getCitations(editorialId: string) {
+    const editorial = await this.editorialRepository.findOne({
+      id: editorialId,
+    });
+    if (!editorial) throw new EditorialNotFoundException();
+    const citations = await this.referenceService.getCitations(editorial);
+
+    const sourceComments = await this.commentRepository.find(
+      {
+        id: {
+          $in: citations
+            .filter(
+              (citation) => citation.sourceType === ReferenceSourceType.COMMENT,
+            )
+            .map((citation) => citation.sourceId),
+        },
+      },
+      {
+        populate: ['author'],
+      },
+    );
+    const poppulatedSourceComments =
+      await this.commentService.populateCommentContext(sourceComments);
+    const sourceEditorials = await this.editorialRepository.find(
+      {
+        id: {
+          $in: citations
+            .filter(
+              (citation) =>
+                citation.sourceType === ReferenceSourceType.EDITORIAL,
+            )
+            .map((citation) => citation.sourceId),
+        },
+      },
+      {
+        populate: ['problem', 'author'],
+      },
+    );
+
+    const citationInformations = citations.map(
+      (citation): CitationInformation => {
+        const res: CitationInformation = {
+          sourceType: citation.sourceType,
+          createdAt: citation.createdAt,
+        };
+        if (citation.sourceType === ReferenceSourceType.COMMENT) {
+          const sourceComment = poppulatedSourceComments.find(
+            (comment) => comment.id === citation.sourceId,
+          );
+          // console.log('sourceComment', sourceComment);
+          if (sourceComment)
+            res.source = {
+              id: sourceComment.id,
+              author: {
+                id: sourceComment.author.id,
+                username: sourceComment.author.username,
+                profilePictureUrl: sourceComment.author.profilePictureUrl,
+              },
+              context: sourceComment.context,
+            };
+        } else if (citation.sourceType === ReferenceSourceType.EDITORIAL) {
+          const sourceEditorial = sourceEditorials.find(
+            (editorial) => editorial.id === citation.sourceId,
+          );
+          if (sourceEditorial)
+            res.source = {
+              id: sourceEditorial?.id,
+              author: {
+                id: sourceEditorial.author.id,
+                username: sourceEditorial.author.username,
+                profilePictureUrl: sourceEditorial.author.profilePictureUrl,
+              },
+              problem: {
+                id: sourceEditorial.problem.id,
+                name: sourceEditorial.problem.name,
+              },
+            };
+        }
+
+        return res;
+      },
+    );
+    return {
+      totalCount: citationInformations.length,
+      results: citationInformations,
     };
   }
 }
