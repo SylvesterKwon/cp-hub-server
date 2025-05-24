@@ -33,6 +33,19 @@ export class EditorialApplication {
     private commentRepository: CommentRepository,
     private commentService: CommentService,
   ) {}
+  async getEditorial(editorialId: string) {
+    const editorial = await this.editorialRepository.findOne(
+      {
+        id: editorialId,
+      },
+      {
+        populate: ['author'],
+      },
+    );
+    if (!editorial) throw new EditorialNotFoundException();
+
+    return this.convertEditorialToDto(editorial);
+  }
 
   // TODO: updateMyEditorial, deleteMyEditorial 을 대응되는 controller 메서드명으로 수정하고 공통 로직을 service 레이어에 추상화
   @Transactional()

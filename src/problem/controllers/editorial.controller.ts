@@ -9,6 +9,11 @@ import { EditorialVoteDto } from '../dtos/vote.dto';
 export class EditorialController {
   constructor(private editorialApplication: EditorialApplication) {}
 
+  @Get(':editorialId')
+  async getEditorial(@Param('editorialId') editorialId: string) {
+    return await this.editorialApplication.getEditorial(editorialId);
+  }
+
   @AuthenticationRequired()
   @Post(':editorialId/vote')
   async vote(
