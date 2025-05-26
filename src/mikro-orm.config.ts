@@ -1,4 +1,5 @@
 import { LoadStrategy, Options } from '@mikro-orm/core';
+import { Migrator } from '@mikro-orm/migrations';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
@@ -21,6 +22,7 @@ const config: Options = {
   entitiesTs: ['src/**/*.entity.ts'],
   loadStrategy: LoadStrategy.JOINED,
   metadataProvider: TsMorphMetadataProvider,
+  extensions: [Migrator],
 };
 
 export default config;
