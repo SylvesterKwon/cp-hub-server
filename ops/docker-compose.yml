@@ -15,6 +15,7 @@ services:
       - pgdata:/var/lib/postgresql/data
 
   cp-hub-nest:
+    env_file: ../.env
     build:
       context: ../
       dockerfile: ops/Dockerfile
