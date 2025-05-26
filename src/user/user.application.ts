@@ -1,4 +1,4 @@
-import { Injectable, NotImplementedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UserService } from './services/user.service';
 import { SignUpDto } from './dtos/user.dto';
 import { MikroORM, Transactional } from '@mikro-orm/core';
@@ -6,6 +6,10 @@ import { AuthService } from './auth.service';
 import { UserRepository } from './repositories/user.repositories';
 import { Response } from 'express';
 import { User } from './entities/user.entity';
+import { UserNotFoundException } from 'src/common/exceptions/user.exception';
+import { CommentRepository } from 'src/comment/repositories/comment.repository';
+import { EditorialRepository } from 'src/problem/repositories/editorial.repository';
+import { EditorialVotesRepository } from 'src/problem/repositories/editorial-votes.repository';
 
 @Injectable()
 export class UserApplication {
@@ -14,7 +18,41 @@ export class UserApplication {
     private userService: UserService,
     private authService: AuthService,
     private userRepository: UserRepository,
+    private commentRepository: CommentRepository,
+    private editorialRepository: EditorialRepository,
+    private editorialVotesRepository: EditorialVotesRepository,
   ) {}
+
+  async getUserDetail(username: string) {
+    const user = await this.userRepository.findOne({ username });
+    if (!user) throw new UserNotFoundException();
+
+    const authoredCommentCount = await this.commentRepository.count({
+      author: user,
+    });
+    const authoredEditorialCount = await this.editorialRepository.count({
+      author: user,
+    });
+    const editorialVoteCount = await this.editorialVotesRepository.count({
+      user: user,
+    });
+
+    return {
+      createdAt: user.createdAt,
+      id: user.id,
+      username: user.username,
+      profilePictureUrl: user.profilePictureUrl,
+      externalPlatformIds: user.externalPlatformIds,
+      biography: user.biography,
+      metrics: {
+        hIndex: user.denormalizedInfo?.hIndex ?? 0,
+        gIndex: user.denormalizedInfo?.gIndex ?? 0,
+        authoredCommentCount,
+        authoredEditorialCount,
+        editorialVoteCount,
+      },
+    };
+  }
 
   async signIn(response: Response, user: User, rememberMe?: boolean) {
     const accessToken = this.authService.signIn(user, rememberMe);
@@ -70,9 +108,5 @@ export class UserApplication {
           }
         : undefined,
     };
-  }
-
-  async getUserProfile(username: string) {
-    throw new NotImplementedException();
   }
 }

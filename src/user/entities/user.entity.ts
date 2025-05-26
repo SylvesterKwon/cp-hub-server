@@ -15,6 +15,13 @@ import { TimestampedEntity } from 'src/common/entities/timestamped-entity.entity
 import { Editorial } from 'src/problem/entities/editorial.entity';
 import { Role } from './role.entity';
 
+export type UserExternalPlatformIds = {
+  codeforces?: string;
+  atCoder?: string;
+  baekjoonOnlineJudge?: string;
+  gitHub?: string;
+};
+
 export type UserDenormalizedInfo = {
   hIndex: number;
   gIndex: number;
@@ -44,6 +51,15 @@ export class User extends TimestampedEntity {
 
   @ManyToMany(() => Editorial, (editorial) => editorial.votedBy)
   votedEditorials = new Collection<Editorial>(this);
+
+  @Property({
+    type: JsonType,
+    nullable: true, // TODO: remove optional
+  })
+  externalPlatformIds?: Opt<UserExternalPlatformIds> = {};
+
+  @Property({ columnType: 'text', length: 140 })
+  biography?: string;
 
   @Property({
     type: JsonType,

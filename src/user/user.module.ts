@@ -11,10 +11,15 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthService } from './auth.service';
 import { Permission } from './entities/permission.entity';
 import { Role } from './entities/role.entity';
+import { EditorialVotes } from 'src/problem/entities/editorial-votes.entity';
+import { Editorial } from 'src/problem/entities/editorial.entity';
+import { Comment } from 'src/comment/entities/comment.entity';
 
 @Module({
   imports: [
-    MikroOrmModule.forFeature({ entities: [User, Permission, Role] }),
+    MikroOrmModule.forFeature({
+      entities: [User, Permission, Role, Comment, Editorial, EditorialVotes],
+    }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

@@ -44,9 +44,9 @@ export class UserController {
     return await this.userApplication.getMe(user);
   }
 
-  @Get(':username/profile')
-  async getUserProfile(@Param('usernmae') username: string) {
-    return await this.userApplication.getUserProfile(username);
+  @Get(':username/detail')
+  async getUserDetail(@Param('username') username: string) {
+    return await this.userApplication.getUserDetail(username);
   }
 
   // TODO: 권한 확인용 임시 API, 삭제 할 것
