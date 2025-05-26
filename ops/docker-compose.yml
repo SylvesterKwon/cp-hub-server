@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  cp-hub-postgres:
+    image: postgres:17
+    container_name: cp-hub-postgres
+    restart: always
+    env_file: ../.env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  cp-hub-nest:
+    build:
+      context: ../
+      dockerfile: ops/Dockerfile
+    container_name: cp-hub-nest
+    depends_on:
+      - cp-hub-postgres
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:
