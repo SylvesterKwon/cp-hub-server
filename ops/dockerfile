@@ -3,6 +3,7 @@ FROM node:22
 WORKDIR /usr/src/app
 
 RUN npm install -g pnpm
+RUN npm install -g ts-node
 
 COPY package*.json ./
 
