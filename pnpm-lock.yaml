@@ -15,7 +15,7 @@ importers:
         specifier: ^6.4.3
         version: 6.4.3
       '@mikro-orm/migrations':
-        specifier: 6.4.3
+        specifier: ^6.4.3
         version: 6.4.3(@mikro-orm/core@6.4.3)(@types/node@20.17.14)(pg@8.13.1)
       '@mikro-orm/nestjs':
         specifier: ^6.0.2
