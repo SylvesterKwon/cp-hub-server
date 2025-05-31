@@ -7,6 +7,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,6 +20,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
           script: |
-            cd /cp-hub-server
+            cd ./cp-hub-server
             git pull origin main
             sudo docker-compose -f ops/docker-compose.yml --env-file .env up -d
