@@ -23,9 +23,9 @@ services:
     depends_on:
       - cp-hub-postgres
 
-  cp-hub-nginx:
+  nginx:
     image: nginx:latest
-    container_name: cp-hub-nginx
+    container_name: nginx
     restart: always
     ports:
       - "80:80"
