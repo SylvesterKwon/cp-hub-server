@@ -23,4 +23,4 @@ jobs:
             cd ./cp-hub-server
             git pull origin main
             git checkout origin/main
-            sudo docker-compose -f ops/docker-compose.yml --env-file .env up -d
+            sudo docker-compose -f ops/docker-compose.yml --env-file .env up --build -d
