@@ -84,7 +84,7 @@ export class UserApplication {
   }
 
   async getMe(user: User | undefined) {
-    if (!user) return undefined;
+    if (!user) return null;
     user = await this.userRepository.populate(user, [
       'role',
       'role.permissions',
