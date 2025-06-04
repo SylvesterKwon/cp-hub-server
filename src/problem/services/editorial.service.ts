@@ -103,7 +103,7 @@ export class EditorialService {
       }
       orderDefinition = {
         [raw(
-          `("denormalized_info"->'exponentialDecayScore'->'cachedValue')::float`,
+          `("e0"."denormalized_info"->'exponentialDecayScore'->'cachedValue')::float`,
         )]: 'desc',
       };
     } else if (option.sortBy === 'createdAtAsc') {
