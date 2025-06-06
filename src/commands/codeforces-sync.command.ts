@@ -1,5 +1,5 @@
 import { Command, CommandRunner, Option } from 'nest-commander';
-import { ProblemSyncApplication } from 'src/problem/applications/problem-sync.applicaiton';
+import { ProblemSyncApplication } from 'src/problem/applications/problem-sync.application';
 
 @Command({
   name: 'sync-cf',
