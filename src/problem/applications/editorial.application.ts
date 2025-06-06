@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { EditorialRepository } from '../repositories/editorial.repository';
 import { Loaded, MikroORM, Transactional } from '@mikro-orm/core';
 import { ProblemRepository } from '../repositories/problem.repository';
@@ -33,6 +33,50 @@ export class EditorialApplication {
     private commentRepository: CommentRepository,
     private commentService: CommentService,
   ) {}
+
+  @Transactional()
+  async getEditorialList(option: {
+    page?: number;
+    pageSize?: number;
+    sortBy?: EditorialListSortBy;
+    requester?: User;
+  }) {
+    if (option.sortBy === 'trending')
+      throw new BadRequestException(
+        'Problem ID must be specified for sort by trending',
+      );
+
+    const { editorials, totalCount } =
+      await this.editorialService.getEditorialList({
+        page: option.page,
+        pageSize: option.pageSize,
+        sortBy: option.sortBy,
+      });
+
+    let results = editorials.map(this.convertEditorialToDto);
+
+    if (option.requester) {
+      const voteStatuses = await this.voteService.getVoteStatuses(
+        option.requester,
+        editorials,
+      );
+      results = results.map((editorial) => {
+        const voteStatus = voteStatuses.find(
+          (vote) => vote.editorialId === editorial.id,
+        );
+        return {
+          ...editorial,
+          myVote: voteStatus?.voteType,
+        };
+      });
+    }
+
+    return {
+      results: results,
+      totalCount: totalCount,
+    };
+  }
+
   async getEditorial(editorialId: string) {
     const editorial = await this.editorialRepository.findOne(
       {
