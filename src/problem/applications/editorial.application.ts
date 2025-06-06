@@ -51,6 +51,7 @@ export class EditorialApplication {
         page: option.page,
         pageSize: option.pageSize,
         sortBy: option.sortBy,
+        populateProblem: true,
       });
 
     let results = editorials.map(this.convertEditorialToDto);
@@ -186,7 +187,7 @@ export class EditorialApplication {
   }
 
   private convertEditorialToDto(
-    editorial: Loaded<Editorial, 'author', '*', never>,
+    editorial: Loaded<Editorial, 'author' | 'problem', '*', never>,
   ) {
     return {
       id: editorial.id,
@@ -200,6 +201,10 @@ export class EditorialApplication {
       commentCount: editorial.denormalizedInfo.commentCount,
       upvoteCount: editorial.denormalizedInfo.upvoteCount,
       downvoteCount: editorial.denormalizedInfo.downvoteCount,
+      problem: {
+        id: editorial.problem.id,
+        name: editorial.problem.name,
+      },
     };
   }
 
