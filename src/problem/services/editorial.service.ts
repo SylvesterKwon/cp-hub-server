@@ -6,7 +6,7 @@ import { Editorial } from '../entities/editorial.entity';
 import { UnauthorizedException } from 'src/common/exceptions/user.exception';
 import { RoleType } from 'src/user/entities/role.entity';
 import { AuthService } from 'src/user/auth.service';
-import { FilterQuery, OrderDefinition, raw } from '@mikro-orm/core';
+import { FilterQuery, OrderDefinition, Populate, raw } from '@mikro-orm/core';
 import { EditorialVotesRepository } from '../repositories/editorial-votes.repository';
 import { EditorialListSortBy } from '../types/editorial.type';
 import dayjs, { Dayjs } from 'dayjs';
@@ -76,6 +76,7 @@ export class EditorialService {
     page?: number;
     pageSize?: number;
     sortBy?: EditorialListSortBy;
+    populateProblem?: boolean;
   }) {
     const filterQuery: FilterQuery<Editorial> = {};
     const page = option.page || 1;
@@ -128,9 +129,12 @@ export class EditorialService {
     if (option.problem) filterQuery.problem = option.problem;
     if (option.author) filterQuery.author = option.author;
 
+    let populateList: Populate<Editorial, 'author' | 'problem'> = ['author'];
+    if (option.populateProblem) populateList = populateList.concat(['problem']);
+
     const [editorials, totalCount] =
       await this.editorialRepository.findAndCount(filterQuery, {
-        populate: ['author'],
+        populate: populateList,
         limit: pageSize,
         offset: (page - 1) * pageSize,
         orderBy: orderDefinition,

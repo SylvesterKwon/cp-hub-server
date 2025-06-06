@@ -6,8 +6,9 @@ import {
   ParseIntPipe,
   Query,
 } from '@nestjs/common';
-import { ContestApplication } from '../applications/contest.applicaiton';
+import { ContestApplication } from '../applications/contest.application';
 import { ContestType } from '../entities/contest.entity';
+import { ContestListSortBy } from '../types/contest.type';
 
 @Controller('contest')
 export class ContestController {
@@ -27,7 +28,7 @@ export class ContestController {
       new ParseArrayPipe({ items: String, separator: ',', optional: true }),
     )
     keyword?: string,
-    // TODO: Add sort by
+    @Query('sortBy') sortBy?: ContestListSortBy, // TODO: Add validation pipe (make it DTO with class-validator)
     // TODO: Add durationSeconds range, startedAt range, detailedType, problemCount filter
   ) {
     return await this.contestApplication.getContestList({
@@ -35,6 +36,7 @@ export class ContestController {
       pageSize,
       types,
       keyword,
+      sortBy,
     });
   }
 

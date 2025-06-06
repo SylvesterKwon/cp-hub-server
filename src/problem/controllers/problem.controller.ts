@@ -8,13 +8,14 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ProblemApplication } from '../applications/problem.applicaiton';
+import { ProblemApplication } from '../applications/problem.application';
 import { EditorialApplication } from '../applications/editorial.application';
 import { AuthenticationRequired } from 'src/common/decorators/auth.decorator';
 import { Requester } from 'src/common/decorators/requester.decorator';
 import { UpdateEditorialDto } from '../dtos/editorial.dto';
 import { User } from 'src/user/entities/user.entity';
 import { EditorialListSortBy } from '../types/editorial.type';
+import { ProblemListSortBy } from '../types/problem.type';
 
 @Controller('problem')
 export class ProblemController {
@@ -37,13 +38,14 @@ export class ProblemController {
       new ParseArrayPipe({ items: String, separator: ',', optional: true }),
     )
     keyword?: string,
-    // TODO: Add sort by
+    @Query('sortBy') sortBy?: ProblemListSortBy, // TODO: Add validation pipe (make it DTO with class-validator)
   ) {
     return await this.problemApplication.getProblemList({
       page,
       pageSize,
       contestTypes,
       keyword,
+      sortBy,
     });
   }
 
