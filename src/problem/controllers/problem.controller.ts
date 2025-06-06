@@ -8,7 +8,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ProblemApplication } from '../applications/problem.applicaiton';
+import { ProblemApplication } from '../applications/problem.application';
 import { EditorialApplication } from '../applications/editorial.application';
 import { AuthenticationRequired } from 'src/common/decorators/auth.decorator';
 import { Requester } from 'src/common/decorators/requester.decorator';
