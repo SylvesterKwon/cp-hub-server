@@ -1,9 +1,10 @@
-import { FilterQuery, MikroORM } from '@mikro-orm/postgresql';
+import { FilterQuery, MikroORM, OrderDefinition } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { ContestNotFoundException } from 'src/common/exceptions/problem.exception';
 import { ContestRepository } from '../repositories/contest.repository';
 import { ContestService } from '../services/contest.service';
 import { Contest, ContestType } from '../entities/contest.entity';
+import { ContestListSortBy } from '../types/contest.type';
 
 @Injectable()
 export class ContestApplication {
@@ -13,28 +14,38 @@ export class ContestApplication {
     private contestService: ContestService,
   ) {}
 
-  async getContestList(contestFilter: {
+  async getContestList(option: {
     page?: number;
     pageSize?: number;
     types?: ContestType[];
     keyword?: string;
+    sortBy?: ContestListSortBy;
   }) {
     const filterQuery: FilterQuery<Contest> = {};
-    if (contestFilter.keyword) {
+    if (option.keyword) {
       // TODO: Add full-text search (elasticsearch?)
-      filterQuery.name = { $like: `${contestFilter.keyword}%` };
+      filterQuery.name = { $like: `${option.keyword}%` };
     }
-    if (contestFilter.types) {
-      filterQuery.type = { $in: contestFilter.types };
+    if (option.types) {
+      filterQuery.type = { $in: option.types };
     }
 
-    const page = contestFilter.page || 1;
-    const pageSize = contestFilter.pageSize || 20;
+    const page = option.page || 1;
+    const pageSize = option.pageSize || 20;
+
+    let orderDefinition: OrderDefinition<Contest> | undefined = undefined;
+    if (option.sortBy === 'createdAtAsc') {
+      orderDefinition = { createdAt: 'asc' };
+    } else if (option.sortBy === 'updatedAtDesc') {
+      orderDefinition = { updatedAt: 'desc' };
+    }
+
     const [contests, totalCount] = await this.contestRepository.findAndCount(
       filterQuery,
       {
         limit: pageSize,
         offset: (page - 1) * pageSize,
+        orderBy: orderDefinition,
       },
     );
 

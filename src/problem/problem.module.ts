@@ -17,7 +17,7 @@ import { ContestController } from './controllers/contest.controller';
 import { ProblemApplication } from './applications/problem.applicaiton';
 import { ContestService } from './services/contest.service';
 import { ProblemService } from './services/problem.service';
-import { ContestApplication } from './applications/contest.applicaiton';
+import { ContestApplication } from './applications/contest.application';
 import { EditorialService } from './services/editorial.service';
 import { Editorial } from './entities/editorial.entity';
 import { UserModule } from 'src/user/user.module';
